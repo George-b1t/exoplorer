@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useRef, useEffect } from "react"
 import { Canvas } from "@react-three/fiber"
 import { OrbitControls, Stars, Html } from "@react-three/drei"
 import { exoplanets } from "@/lib/exo"
@@ -43,9 +43,9 @@ function parseMass(value: number | string | null | undefined): { mass: number | 
   }
 }
 
-function Sun() {
+function Sun({ onFocus }: { onFocus?: (pos: [number, number, number]) => void }) {
   return (
-    <mesh position={[0, 0, 0]}>
+    <mesh position={[0, 0, 0]} onClick={() => onFocus?.([0, 0, 0])}>
       <sphereGeometry args={[2, 32, 32]} />
       <meshStandardMaterial emissive="#FDB813" emissiveIntensity={2} color="#FDB813" />
       <Html distanceFactor={10} position={[0, 2.5, 0]}>
@@ -57,10 +57,10 @@ function Sun() {
 
 const EARTH_POS: [number, number, number] = [8, 0, 0]
 
-function Earth() {
+function Earth({ onFocus }: { onFocus?: (pos: [number, number, number]) => void }) {
   const R_EARTH_SCENE = 0.5 // raio visual de referência para 1 M⊕ (aprox.)
   return (
-    <mesh position={EARTH_POS}>
+    <mesh position={EARTH_POS} onClick={() => onFocus?.(EARTH_POS)}>
       <sphereGeometry args={[R_EARTH_SCENE, 32, 32]} />
       <meshStandardMaterial color="#4A90E2" />
       <Html distanceFactor={10} position={[0, R_EARTH_SCENE + 0.5, 0]}>
@@ -171,7 +171,7 @@ function toScenePosDeterministic(
   return [nx * r + jx, ny * r + jy, nz * r + jz]
 }
 
-function Exoplanet({ planet }: { planet: ExoplanetData | null }) {
+function Exoplanet({ planet, onFocus }: { planet: ExoplanetData | null; onFocus?: (pos: [number, number, number]) => void }) {
   if (!planet) return null
 
   const [px, py, pz] = toScenePosDeterministic(planet.x, planet.y, planet.z, planet.id)
@@ -179,7 +179,7 @@ function Exoplanet({ planet }: { planet: ExoplanetData | null }) {
   const color = massToColor(planet.mass)
 
   return (
-    <mesh position={[px, py, pz]}>
+    <mesh position={[px, py, pz]} onClick={() => onFocus?.([px, py, pz])}>
       <sphereGeometry args={[radius, 32, 32]} />
       <meshStandardMaterial color={color} />
     </mesh>
@@ -188,33 +188,59 @@ function Exoplanet({ planet }: { planet: ExoplanetData | null }) {
 
 function Scene() {
   const planets = useMemo<ExoplanetData[]>(
-  () =>
-    (exoplanets as RawExo[]).map((p) => {
-      const { mass, label } = parseMass(p.pl_masse ?? null)
-      return {
-        name: p.name,
-        id: (p as any).id ?? p.name,
-        x: p.x,
-        y: p.y,
-        z: p.z,
-        mass,
-        massLabel: label,
+    () =>
+      (exoplanets as RawExo[]).map((p) => {
+        const { mass, label } = parseMass(p.pl_masse ?? null)
+        return {
+          name: p.name,
+          id: (p as any).id ?? p.name,
+          x: p.x,
+          y: p.y,
+          z: p.z,
+          mass,
+          massLabel: label,
+        }
+      }),
+    [],
+  )
+
+  const controlsRef = useRef<any>(null)
+  const handleFocus = (pos: [number, number, number]) => {
+    controlsRef.current?.target.set(pos[0], pos[1], pos[2])
+    controlsRef.current?.update?.()
+  }
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "h" || e.key === "H") {
+        handleFocus(EARTH_POS)
       }
-    }),
-  [],
-)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
 
   return (
     <>
       <ambientLight intensity={0.3} />
       <pointLight position={[0, 0, 0]} intensity={2} color="#FDB813" />
       <Stars radius={300} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-      <Sun />
-      <Earth />
+      <Sun onFocus={handleFocus} />
+      <Earth onFocus={handleFocus} />
       {planets.filter((exo) => exo.mass != null).map((exo) => (
-        <Exoplanet key={exo.id} planet={exo} />
+        <Exoplanet key={exo.id} planet={exo} onFocus={handleFocus} />
       ))}
-      <OrbitControls enablePan enableZoom enableRotate target={EARTH_POS} />
+      <OrbitControls
+        ref={controlsRef}
+        enablePan
+        enableZoom
+        enableRotate
+        enableDamping
+        dampingFactor={0.1}
+        minDistance={12}
+        maxDistance={800}
+        target={EARTH_POS}
+      />
     </>
   )
 }
@@ -222,7 +248,7 @@ function Scene() {
 export default function ExoplanetViewer() {
   return (
     <div className="w-full h-screen bg-black relative">
-      <Canvas camera={{ position: [0, 10, 20], fov: 60 }}>
+      <Canvas camera={{ position: [0, 10, 20], fov: 60, far: 2000 }}>
         <Scene />
       </Canvas>
 

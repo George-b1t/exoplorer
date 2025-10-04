@@ -82,7 +82,7 @@ function massToRadius(mass?: number | null): number {
   if (!mass || mass <= 0) return 0.8 // fallback visual quando não houver massa
   const r = R_EARTH_SCENE * Math.cbrt(mass)
   // Evita pontos grandes demais ou minúsculos
-  return Math.min(Math.max(r, 0.35), 1.6)
+  return Math.min(Math.max(r, 0.35), 1.6) * 0.15
 }
 
 /** Cor por faixa de massa (M⊕) para leitura rápida. */
@@ -93,10 +93,86 @@ function massToColor(mass?: number | null): string {
   return "#F06ACF" // >10 M⊕ (mais massivo)
 }
 
+// --- Posicionamento determinístico para eliminar o efeito de "casca" ---
+// Hash simples para gerar seed a partir de string
+function hashStringToSeed(str: string): number {
+  let h = 2166136261 >>> 0
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+
+// PRNG determinístico (mulberry32)
+function mulberry32(a: number) {
+  return function () {
+    let t = (a += 0x6D2B79F5)
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
+
+// Distribui raio uniformemente em volume no intervalo [rMin, rMax]
+function computeRadiusFromSeed(seedKey: string, rMin = 6, rMax = 24): number {
+  const seed = hashStringToSeed(seedKey)
+  const rand = mulberry32(seed)
+  const u = rand() // uniforme [0,1)
+  const r3 = (Math.pow(rMax, 3) - Math.pow(rMin, 3)) * u + Math.pow(rMin, 3)
+  return Math.cbrt(r3)
+}
+
+// Base ortonormal (u,v) ortogonal à direção n
+function getOrthonormalBasis(n: [number, number, number]) {
+  const [nx, ny, nz] = n
+  const a: [number, number, number] = Math.abs(nx) < 0.9 ? [1, 0, 0] : [0, 1, 0]
+  const ux = ny * a[2] - nz * a[1]
+  const uy = nz * a[0] - nx * a[2]
+  const uz = nx * a[1] - ny * a[0]
+  const ul = Math.hypot(ux, uy, uz) || 1
+  const u: [number, number, number] = [ux / ul, uy / ul, uz / ul]
+  const vx = ny * u[2] - nz * u[1]
+  const vy = nz * u[0] - nx * u[2]
+  const vz = nx * u[1] - ny * u[0]
+  const v: [number, number, number] = [vx, vy, vz]
+  return { u, v }
+}
+
+// Nova função de posição: normaliza direção, aplica raio determinístico e jitter leve
+function toScenePosDeterministic(
+  x: number,
+  y: number,
+  z: number,
+  seedKey: string,
+  opts?: { rMin?: number; rMax?: number; jitter?: number },
+): [number, number, number] {
+  const len = Math.hypot(x, y, z) || 1
+  const nx = x / len
+  const ny = y / len
+  const nz = z / len
+
+  const r = computeRadiusFromSeed(seedKey, opts?.rMin ?? 6, opts?.rMax ?? 24)
+
+  // jitter ortogonal determinístico, bem pequeno para evitar sobreposição exata
+  const seed = hashStringToSeed(seedKey)
+  const rand = mulberry32(seed ^ 0x9E3779B9)
+  const jitterAmp = opts?.jitter ?? 0.4
+  const j1 = (rand() - 0.5) * 2
+  const j2 = (rand() - 0.5) * 2
+
+  const { u, v } = getOrthonormalBasis([nx, ny, nz])
+  const jx = jitterAmp * (u[0] * j1 + v[0] * j2)
+  const jy = jitterAmp * (u[1] * j1 + v[1] * j2)
+  const jz = jitterAmp * (u[2] * j1 + v[2] * j2)
+
+  return [nx * r + jx, ny * r + jy, nz * r + jz]
+}
+
 function Exoplanet({ planet }: { planet: ExoplanetData | null }) {
   if (!planet) return null
 
-  const [px, py, pz] = toScenePos(planet.x, planet.y, planet.z)
+  const [px, py, pz] = toScenePosDeterministic(planet.x, planet.y, planet.z, planet.id)
   const radius = massToRadius(planet.mass)
   const color = massToColor(planet.mass)
 
@@ -110,21 +186,21 @@ function Exoplanet({ planet }: { planet: ExoplanetData | null }) {
 
 function Scene() {
   const planets = useMemo<ExoplanetData[]>(
-    () =>
-      (exoplanets as RawExo[]).map((p) => {
-        const { mass, label } = parseMass(p.pl_masse ?? null)
-        return {
-          name: p.name,
-          id: p.id,
-          x: p.x,
-          y: p.y,
-          z: p.z,
-          mass,
-          massLabel: label,
-        }
-      }),
-    [],
-  )
+  () =>
+    (exoplanets as RawExo[]).map((p) => {
+      const { mass, label } = parseMass(p.pl_masse ?? null)
+      return {
+        name: p.name,
+        id: (p as any).id ?? p.name,
+        x: p.x,
+        y: p.y,
+        z: p.z,
+        mass,
+        massLabel: label,
+      }
+    }),
+  [],
+)
 
   return (
     <>
@@ -133,7 +209,7 @@ function Scene() {
       <Stars radius={300} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
       <Sun />
       <Earth />
-      {planets.map((exo) => (
+      {planets.filter((exo) => exo.mass != null).map((exo) => (
         <Exoplanet key={exo.id} planet={exo} />
       ))}
       <OrbitControls enablePan enableZoom enableRotate />

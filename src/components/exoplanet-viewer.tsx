@@ -55,10 +55,12 @@ function Sun() {
   )
 }
 
+const EARTH_POS: [number, number, number] = [8, 0, 0]
+
 function Earth() {
   const R_EARTH_SCENE = 0.5 // raio visual de referência para 1 M⊕ (aprox.)
   return (
-    <mesh position={[8, 0, 0]}>
+    <mesh position={EARTH_POS}>
       <sphereGeometry args={[R_EARTH_SCENE, 32, 32]} />
       <meshStandardMaterial color="#4A90E2" />
       <Html distanceFactor={10} position={[0, R_EARTH_SCENE + 0.5, 0]}>
@@ -82,7 +84,7 @@ function massToRadius(mass?: number | null): number {
   if (!mass || mass <= 0) return 0.8 // fallback visual quando não houver massa
   const r = R_EARTH_SCENE * Math.cbrt(mass)
   // Evita pontos grandes demais ou minúsculos
-  return Math.min(Math.max(r, 0.35), 1.6) * 0.15
+  return Math.min(Math.max(r, 0.35), 1.6) * 0.3
 }
 
 /** Cor por faixa de massa (M⊕) para leitura rápida. */
@@ -115,7 +117,7 @@ function mulberry32(a: number) {
 }
 
 // Distribui raio uniformemente em volume no intervalo [rMin, rMax]
-function computeRadiusFromSeed(seedKey: string, rMin = 6, rMax = 24): number {
+function computeRadiusFromSeed(seedKey: string, rMin = 24, rMax = 96): number {
   const seed = hashStringToSeed(seedKey)
   const rand = mulberry32(seed)
   const u = rand() // uniforme [0,1)
@@ -152,7 +154,7 @@ function toScenePosDeterministic(
   const ny = y / len
   const nz = z / len
 
-  const r = computeRadiusFromSeed(seedKey, opts?.rMin ?? 6, opts?.rMax ?? 24)
+  const r = computeRadiusFromSeed(seedKey, opts?.rMin, opts?.rMax)
 
   // jitter ortogonal determinístico, bem pequeno para evitar sobreposição exata
   const seed = hashStringToSeed(seedKey)
@@ -212,7 +214,7 @@ function Scene() {
       {planets.filter((exo) => exo.mass != null).map((exo) => (
         <Exoplanet key={exo.id} planet={exo} />
       ))}
-      <OrbitControls enablePan enableZoom enableRotate />
+      <OrbitControls enablePan enableZoom enableRotate target={EARTH_POS} />
     </>
   )
 }

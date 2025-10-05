@@ -4,9 +4,12 @@ import { Card } from "@/components/ui/card"
 
 export default function AboutPage() {
   const teamMembers = [
-    { name: "Member 1", role: "Developer" },
-    { name: "Member 2", role: "Designer" },
-    { name: "Member 3", role: "Data Scientist" },
+    { name: "Gabriel Nunes", role: "Developer", img: "/members/gabriel.jpg" },
+    { name: "George Soares", role: "Developer", img: "/members/george.jpg" },
+    { name: "Gustavo Andrade", role: "Developer", img: "/members/gustavo.jpg" },
+    { name: "Mayke Erick", role: "Developer", img: "/members/mayke.jpg" },
+    { name: "Paulo Henrique", role: "Developer", img: "/members/paulo.jpg" },
+    { name: "Yuri Garcia", role: "Developer", img: "/members/yuri.jpg" },
   ]
 
   return (
@@ -41,7 +44,7 @@ export default function AboutPage() {
               <div className="relative">
                 <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-nebula-purple/20 to-cosmic-cyan/20 border-2 border-nebula-purple/30 backdrop-blur-sm">
                   <img
-                    src="/images/design-mode/Screenshot%202025-10-04%20at%2020.28.21.png"
+                    src="/members/monkey.png"
                     alt="MoonMonkeys Astronaut"
                     className="w-full h-full object-cover"
                   />
@@ -56,7 +59,11 @@ export default function AboutPage() {
                   <Card key={index} className="p-6 bg-card/80 backdrop-blur-sm border-2 border-nebula-purple/20">
                     <div className="space-y-4">
                       <div className="aspect-square rounded-lg bg-gradient-to-br from-nebula-purple/20 to-cosmic-cyan/20 flex items-center justify-center border border-nebula-purple/30">
-                        <span className="text-6xl">👨‍🚀</span>
+                        <img
+                          src={member.img}
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
                       <div className="text-center">
                         <h3 className="font-bold text-lg text-white">{member.name}</h3>

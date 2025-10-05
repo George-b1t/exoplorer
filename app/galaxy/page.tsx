@@ -19,11 +19,10 @@ export default function GalaxyPage() {
           <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-nebula-purple via-cosmic-cyan to-nebula-pink bg-clip-text text-transparent">
             Explorador Galáctico
           </h1>
-          <p className="text-white/60 text-sm">Navegue pelo universo de exoplanetas em 3D</p>
         </div>
 
         {/* Galaxy component with decorative border */}
-        <div className="flex-1 relative mt-32 mb-8 mx-4 md:mx-8">
+        <div className="flex-1 relative mt-36 mb-8 mx-4 md:mx-8">
           <div className="absolute inset-0 rounded-2xl border-2 border-nebula-purple/30 bg-gradient-to-br from-nebula-purple/5 to-cosmic-cyan/5 backdrop-blur-sm overflow-hidden">
             <Galaxy />
           </div>
@@ -38,17 +37,14 @@ export default function GalaxyPage() {
         {/* Bottom info bar */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-6 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
           <div className="flex items-center gap-2 text-white/70 text-xs">
-            <span className="w-2 h-2 rounded-full bg-nebula-purple animate-pulse" />
             <span>Arraste para rotacionar</span>
           </div>
           <div className="w-px h-4 bg-white/20" />
           <div className="flex items-center gap-2 text-white/70 text-xs">
-            <span className="w-2 h-2 rounded-full bg-cosmic-cyan animate-pulse" />
             <span>Scroll para zoom</span>
           </div>
           <div className="w-px h-4 bg-white/20" />
           <div className="flex items-center gap-2 text-white/70 text-xs">
-            <span className="w-2 h-2 rounded-full bg-nebula-pink animate-pulse" />
             <span>Clique nos planetas</span>
           </div>
         </div>

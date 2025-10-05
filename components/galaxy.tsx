@@ -25,6 +25,7 @@ type RawExo = {
   pl_orbsmax: number | null; 
   pl_orbper: number | null; 
   pl_eqt: number | null;
+  isPlanet?: number | null;
 }
 
 export type ExoplanetData = {
@@ -44,6 +45,7 @@ export type ExoplanetData = {
   pl_orbsmax: number | null; 
   pl_orbper: number | null; 
   pl_eqt: number | null;
+  isPlanet: number | null;
 }
 
 function parseMass(value: number | string | null | undefined): { mass: number | null; label: string } {
@@ -64,11 +66,50 @@ function parseMass(value: number | string | null | undefined): { mass: number | 
 }
 
 function Sun({ onFocus }: { onFocus?: (pos: [number, number, number]) => void }) {
+  const mesh = useRef<THREE.Mesh>(null)
+
+  // Sol no centro; a "luz" direcional do shader pode ficar arbitrária
+  const lightDir = useMemo(() => new THREE.Vector3(1, 0.2, 0.1).normalize(), [])
+
+  // Usa o mesmo pipeline do exoplaneta, mas com cor fixa amarela
+  const uniforms = useMemo(() => {
+    const u = retrieveUniforms(6000) // aprox. Teff solar (apenas pra manter compatibilidade de uniforms)
+    if (u.uLightDir?.value) (u.uLightDir.value as THREE.Vector3).copy(lightDir)
+
+    // tenta sobrescrever a cor base, independente do nome que seu shader expõe
+    const base = new THREE.Color("#ffce5d")
+    if ((u as any).uBaseColor) ((u as any).uBaseColor.value as THREE.Color).copy(base)
+    if ((u as any).uTint) ((u as any).uTint.value as THREE.Color).copy(base)
+    if ((u as any).uAlbedoColor) ((u as any).uAlbedoColor.value as THREE.Color).copy(base)
+
+    return u
+  }, [lightDir])
+
+  const mat = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader: planetVertex,
+        fragmentShader: planetFragment,
+      }),
+    [uniforms],
+  )
+
+  useFrame((_, dt) => {
+    (mat.uniforms.uTime.value as number) += dt
+    if (mesh.current) mesh.current.rotation.y += dt * 0.3
+  })
+
   return (
-    <mesh position={[0, 0, 0]} onClick={() => onFocus?.([0, 0, 0])}>
-      <sphereGeometry args={[2, 32, 32]} />
-      <meshStandardMaterial emissive="#FDB813" emissiveIntensity={2.5} color="#FDB813" />
-      <Html distanceFactor={10} position={[0, 2.5, 0]}>
+    <mesh
+      ref={mesh}
+      position={[0, 0, 0]}
+      onClick={() => onFocus?.([0, 0, 0])}
+    >
+      {/* raio visual do Sol no seu scene graph atual */}
+      <sphereGeometry args={[2, 64, 64]} />
+      <primitive object={mat} attach="material" />
+      <Html distanceFactor={10} position={[0, 2.6, 0]}>
         <div className="text-white text-sm font-medium whitespace-nowrap bg-black/70 px-3 py-1.5 rounded-lg border border-yellow-500/30">
           Sol (Sun)
         </div>
@@ -80,11 +121,48 @@ function Sun({ onFocus }: { onFocus?: (pos: [number, number, number]) => void })
 const EARTH_POS: [number, number, number] = [8, 0, 0]
 
 function Earth({ onFocus }: { onFocus?: (pos: [number, number, number]) => void }) {
-  const R_EARTH_SCENE = 0.5 // raio visual de referência para 1 M⊕ (aprox.)
+  const mesh = useRef<THREE.Mesh>(null)
+  const R_EARTH_SCENE = 0.5
+
+  // direção da "luz" vinda do Sol (origem) em relação à Terra
+  const lightDir = useMemo(() => new THREE.Vector3(-EARTH_POS[0], -EARTH_POS[1], -EARTH_POS[2]).normalize(), [])
+
+  // usa o mesmo pipeline + cor fixa azul
+  const uniforms = useMemo(() => {
+    const u = retrieveUniforms(288) // ~Teq/temperatura "visual"; só pra manter o contrato de uniforms
+    if (u.uLightDir?.value) (u.uLightDir.value as THREE.Vector3).copy(lightDir)
+
+    const base = new THREE.Color("#4A90E2")
+    if ((u as any).uBaseColor) ((u as any).uBaseColor.value as THREE.Color).copy(base)
+    if ((u as any).uTint) ((u as any).uTint.value as THREE.Color).copy(base)
+    if ((u as any).uAlbedoColor) ((u as any).uAlbedoColor.value as THREE.Color).copy(base)
+
+    return u
+  }, [lightDir])
+
+  const mat = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        uniforms,
+        vertexShader: planetVertex,
+        fragmentShader: planetFragment,
+      }),
+    [uniforms],
+  )
+
+  useFrame((_, dt) => {
+    (mat.uniforms.uTime.value as number) += dt
+    if (mesh.current) mesh.current.rotation.y += dt * 0.6
+  })
+
   return (
-    <mesh position={EARTH_POS} onClick={() => onFocus?.(EARTH_POS)}>
-      <sphereGeometry args={[R_EARTH_SCENE, 32, 32]} />
-      <meshStandardMaterial color="#4A90E2" emissive="#2563eb" emissiveIntensity={0.3} />
+    <mesh
+      ref={mesh}
+      position={EARTH_POS}
+      onClick={() => onFocus?.(EARTH_POS)}
+    >
+      <sphereGeometry args={[R_EARTH_SCENE, 64, 64]} />
+      <primitive object={mat} attach="material" />
       <Html distanceFactor={10} position={[0, R_EARTH_SCENE + 0.5, 0]}>
         <div className="text-white text-sm font-medium whitespace-nowrap bg-black/70 px-3 py-1.5 rounded-lg border border-blue-500/30">
           Terra (Earth) — 1 M⊕
@@ -95,7 +173,7 @@ function Earth({ onFocus }: { onFocus?: (pos: [number, number, number]) => void 
 }
 
 /** Converte massa (M⊕) em raio visual. Aproximação: R ∝ M^(1/3) com clamps para visualização. */
-function massToRadius(mass?: number | null): number {
+export function massToRadius(mass?: number | null): number {
   const R_EARTH_SCENE = 0.5
   if (!mass || mass <= 0) return 0.8 // fallback visual quando não houver massa
   const r = R_EARTH_SCENE * Math.cbrt(mass)
@@ -158,7 +236,7 @@ function getOrthonormalBasis(n: [number, number, number]) {
 }
 
 // Nova função de posição: normaliza direção, aplica raio determinístico e jitter leve
-function toScenePosDeterministic(
+export function toScenePosDeterministic(
   x: number,
   y: number,
   z: number,
@@ -170,7 +248,7 @@ function toScenePosDeterministic(
   const ny = y / len
   const nz = z / len
 
-  const r = computeRadiusFromSeed(seedKey, opts?.rMin, opts?.rMax)
+  const r = computeRadiusFromSeed(seedKey, opts?.rMin, opts?.rMax) * 1.8
 
   // jitter ortogonal determinístico, bem pequeno para evitar sobreposição exata
   const seed = hashStringToSeed(seedKey)
@@ -190,11 +268,9 @@ function toScenePosDeterministic(
 function Exoplanet({
   planet,
   onFocus,
-  onHover,
 }: {
   planet: ExoplanetData | null
   onFocus?: (pos: [number, number, number]) => void
-  onHover?: (info: { name?: string; x?: number; y?: number; visible: boolean }) => void
 }) {
   if (!planet) return null
 
@@ -239,11 +315,12 @@ function Exoplanet({
 
 function Scene({
   onSelectPlanet,
-  onHoverPlanet,
+  onUserInteraction, // << NOVO
   autoRotate,
 }: {
   onSelectPlanet?: (p: ExoplanetData) => void
   onHoverPlanet?: (info: { name?: string; x?: number; y?: number; visible: boolean }) => void
+  onUserInteraction?: () => void // << NOVO
   autoRotate: boolean
 }) {
   const { gl } = useThree();
@@ -272,12 +349,58 @@ function Scene({
           pl_orbsmax: p.pl_orbsmax,
           pl_orbper: p.pl_orbper,
           pl_eqt: p.pl_eqt,
+          isPlanet: p.isPlanet ?? null,
         }
       }),
     [],
   )
 
+  const animateTo = (pos: [number, number, number], approxRadius: number) => {
+    const controls = controlsRef.current
+    if (!controls) return
+
+    const cam = controls.object
+    const V = (cam as any).up.constructor
+    const forward = cam.getWorldDirection(new V())
+    const desiredDist = Math.max(2.0, Math.min(3.5, approxRadius * 6))
+    const dir = forward.clone().multiplyScalar(-desiredDist)
+
+    const toTarget = new V(pos[0], pos[1], pos[2])
+    const toCam = new V(pos[0] + dir.x, pos[1] + dir.y, pos[2] + dir.z)
+
+    animRef.current = {
+      active: true,
+      start: typeof performance !== "undefined" ? performance.now() : Date.now(),
+      duration: 800,
+      fromCam: cam.position.clone(),
+      toCam,
+      fromTarget: controls.target.clone(),
+      toTarget,
+    }
+  }
+
   const controlsRef = useRef<any>(null)
+
+  // Escuta eventos do OrbitControls para detectar interação do usuário
+  useEffect(() => {
+    const controls = controlsRef.current
+    if (!controls) return
+
+    const handleStart = () => onUserInteraction?.()
+    const handleChange = () => onUserInteraction?.() // enquanto o usuário arrasta/roda
+    const handleEnd = () => onUserInteraction?.()
+
+    controls.addEventListener?.('start', handleStart)
+    controls.addEventListener?.('change', handleChange)
+    controls.addEventListener?.('end', handleEnd)
+
+    return () => {
+      controls.removeEventListener?.('start', handleStart)
+      controls.removeEventListener?.('change', handleChange)
+      controls.removeEventListener?.('end', handleEnd)
+    }
+  }, [onUserInteraction])
+
   // Ref de animação para transição suave de câmera e target
   const animRef = useRef<{
     active: boolean
@@ -336,10 +459,13 @@ function Scene({
   return (
     <>
       <ambientLight intensity={0.3} />
-      <pointLight position={[0, 0, 0]} intensity={2} color="#FDB813" />
+      <pointLight position={[0, 0, 0]} intensity={1} color="#FDB813" />
       <Stars radius={300} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-      <Sun onFocus={handleFocus} />
-      <Earth onFocus={handleFocus} />
+
+      {/* Sol + halo */}
+      <Sun onFocus={(pos) => animateTo(pos, 2)} />
+
+      <Earth onFocus={(pos) => animateTo(pos, 0.5)} />
       {planets
         .filter((exo) => exo.mass != null)
         .map((exo) => (
@@ -372,7 +498,6 @@ function Scene({
               }
               onSelectPlanet?.(exo)
             }}
-            onHover={onHoverPlanet}
           />
         ))}
       <OrbitControls
@@ -394,49 +519,37 @@ function Scene({
 
 export function Galaxy() {
   const [selected, setSelected] = useState<ExoplanetData | null>(null)
-  const [tooltip, setTooltip] = useState<{ visible: boolean; text: string; x: number; y: number }>({
-    visible: false,
-    text: "",
-    x: 0,
-    y: 0,
-  })
-  const [autoRotate, setAutoRotate] = useState(true)
+  const [tooltip, setTooltip] = useState({ visible: false, text: "", x: 0, y: 0 })
+  const [autoRotate, setAutoRotate] = useState(true) // ligado por padrão
+  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleUserInteraction = () => {
+    // pausa a autorotação por 5s e reinicia o timer se o usuário continuar mexendo
+    setAutoRotate(false)
+    if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
+    pauseTimerRef.current = setTimeout(() => setAutoRotate(true), 5000)
+  }
 
   useEffect(() => {
-    const onEsc = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setSelected(null)
-    }
+    const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setSelected(null)
     window.addEventListener("keydown", onEsc)
     return () => window.removeEventListener("keydown", onEsc)
   }, [])
 
   return (
     <div className="w-full h-full bg-transparent relative">
-      <Canvas camera={{ position: [0, 10, 20], fov: 60, far: 2000 }}>
+      <Canvas camera={{ position: [0, 10, 20], fov: 60, far: 2000 }}
+              onPointerDown={handleUserInteraction} /* segurança extra para clique/touch no canvas */>
         <Scene
           onSelectPlanet={setSelected}
           onHoverPlanet={(info) => {
-            if (info.visible) {
-              setTooltip({ visible: true, text: info.name ?? "", x: info.x ?? 0, y: info.y ?? 0 })
-            } else {
-              setTooltip((t) => ({ ...t, visible: false }))
-            }
+            if (info.visible) setTooltip({ visible: true, text: info.name ?? "", x: info.x ?? 0, y: info.y ?? 0 })
+            else setTooltip((t) => ({ ...t, visible: false }))
           }}
+          onUserInteraction={handleUserInteraction}
           autoRotate={autoRotate}
         />
       </Canvas>
-
-      <div className="absolute top-4 right-4 z-50">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => setAutoRotate(!autoRotate)}
-          className="bg-black/80 backdrop-blur-md border-nebula-purple/30 hover:border-nebula-purple text-white hover:bg-nebula-purple/20"
-        >
-          {autoRotate ? <Pause className="w-4 h-4 mr-2" /> : <RotateCw className="w-4 h-4 mr-2" />}
-          {autoRotate ? "Pausar Rotação" : "Ativar Rotação"}
-        </Button>
-      </div>
 
       {tooltip.visible && (
         <div className="fixed pointer-events-none z-50" style={{ left: tooltip.x + 12, top: tooltip.y + 12 }}>
@@ -469,29 +582,61 @@ export function Galaxy() {
                 <span className="text-white/60">Massa:</span>
                 <span className="font-semibold text-nebula-pink">{selected.massLabel} M⊕</span>
               </div>
+              <div className="flex justify-between items-center py-2 border-b border-white/10">
+                <span className="text-white/60">Raio:</span>
+                <span className="font-semibold text-nebula-pink">
+                  {selected.pl_rade != null ? `${selected.pl_rade} R⊕` : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-white/60">Temperatura Equivalente:</span>
+                <span className="font-semibold text-nebula-pink">
+                  {selected.pl_eqt != null ? `${selected.pl_eqt} K` : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-white/10">
+                <span className="text-white/60">Estrela Hospedeira (Teff):</span>
+                <span className="font-semibold text-nebula-pink">
+                  {selected.st_teff != null ? `${selected.st_teff} K` : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-white/60">Estrela Hospedeira (Massa):</span>
+                <span className="font-semibold text-nebula-pink">
+                  {selected.st_mass != null ? `${selected.st_mass} M☉` : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-white/10">
+                <span className="text-white/60">Estrela Hospedeira (Raio):</span>
+                <span className="font-semibold text-nebula-pink">
+                  {selected.st_rad != null ? `${selected.st_rad} R☉` : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-white/60">Semi-eixo maior (a):</span>
+                <span className="font-semibold text-nebula-pink">
+                  {selected.pl_orbsmax != null ? `${selected.pl_orbsmax} UA` : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-white/10">
+                <span className="text-white/60">Período Orbital:</span>
+                <span className="font-semibold text-nebula-pink">
+                  {selected.pl_orbper != null ? `${selected.pl_orbper} dias` : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-white/60">Tipo:</span>
+                <span className="font-semibold text-nebula-pink">
+                  {selected.isPlanet === 1 ? "Planeta" : selected.isPlanet === 0 ? "Candidato" : "—"}
+                </span>
+              </div>
+            </div>
+            <div className="mt-6 text-xs text-white/50 italic">
+              Dados de exoplanetas fornecidos por NASA Exoplanet Archive.
             </div>
           </div>
         </div>
       )}
-
-      <div className="absolute top-4 left-4 text-white/90 text-xs bg-black/80 backdrop-blur-md rounded-xl p-4 space-y-2 border border-white/10 shadow-lg">
-        <div className="font-bold mb-2 text-sm text-white">Legenda (massa em M⊕)</div>
-        <div className="flex items-center gap-3">
-          <span className="inline-block w-4 h-4 rounded-full shadow-lg" style={{ background: "#E8B4F0" }} />
-          <span className="text-white/80">&lt; 1.5 M⊕</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="inline-block w-4 h-4 rounded-full shadow-lg" style={{ background: "#C99AF0" }} />
-          <span className="text-white/80">1.5 – 10 M⊕</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="inline-block w-4 h-4 rounded-full shadow-lg" style={{ background: "#F06ACF" }} />
-          <span className="text-white/80">&gt; 10 M⊕</span>
-        </div>
-        <div className="text-white/50 mt-2 pt-2 border-t border-white/10 text-[10px]">
-          "&lt; x" indica limite superior
-        </div>
-      </div>
     </div>
   )
 }

@@ -1,11 +1,15 @@
 "use client"
 
 import { useMemo, useRef, useEffect, useState } from "react"
-import { Canvas, useFrame } from "@react-three/fiber"
+import { Canvas, useFrame, useThree } from "@react-three/fiber"
 import { OrbitControls, Stars, Html, useCursor } from "@react-three/drei"
+import * as THREE from "three"
 import { exoplanets } from "@/lib/exo"
 import { Button } from "@/components/ui/button"
 import { RotateCw, Pause } from "lucide-react"
+import { planetFragment, planetVertex } from "@/shaders/PlanetBase.glsl"
+import { computeTeq } from "@/utils/equivalentTempUtils"
+import { retrieveUniforms } from "@/constants/uniforms"
 
 type RawExo = {
   name: string
@@ -14,9 +18,16 @@ type RawExo = {
   y: number
   z: number
   pl_masse?: number | string | null
+  pl_rade: number | null;
+  st_teff: number | null; 
+  st_rad: number | null; 
+  st_mass: number | null;
+  pl_orbsmax: number | null; 
+  pl_orbper: number | null; 
+  pl_eqt: number | null;
 }
 
-type ExoplanetData = {
+export type ExoplanetData = {
   name: string
   id: string
   x: number
@@ -26,6 +37,13 @@ type ExoplanetData = {
   mass: number | null
   /** Texto para exibir (ex.: "2.1", "< 0.8", "—") */
   massLabel: string
+  pl_rade: number | null;
+  st_teff: number | null; 
+  st_rad: number | null; 
+  st_mass: number | null;
+  pl_orbsmax: number | null; 
+  pl_orbper: number | null; 
+  pl_eqt: number | null;
 }
 
 function parseMass(value: number | string | null | undefined): { mass: number | null; label: string } {
@@ -74,12 +92,6 @@ function Earth({ onFocus }: { onFocus?: (pos: [number, number, number]) => void 
       </Html>
     </mesh>
   )
-}
-
-/** Converte (x,y,z) e projeta para um raio (scale) da cena */
-function toScenePos(x: number, y: number, z: number, scale = 24): [number, number, number] {
-  // Apenas multiplica as coordenadas pelo fator de escala sem normalizar o vetor
-  return [x * scale, y * scale, z * scale]
 }
 
 /** Converte massa (M⊕) em raio visual. Aproximação: R ∝ M^(1/3) com clamps para visualização. */
@@ -191,11 +203,35 @@ function Exoplanet({
 
   const [px, py, pz] = toScenePosDeterministic(planet.x, planet.y, planet.z, planet.id)
   const radius = massToRadius(planet.mass)
-  const color = massToColor(planet.mass)
+
+  const mesh = useRef<THREE.Mesh>(null);
+  const Teq = computeTeq(planet);
+  // depois de calcular [px, py, pz]
+  const lightDir = useMemo(() => new THREE.Vector3(-px, -py, -pz).normalize(), [px, py, pz]);
+
+  const uniforms = useMemo(() => {
+    const u = retrieveUniforms(Teq);
+    (u.uLightDir.value as THREE.Vector3).copy(lightDir); // atualiza direção
+    return u;
+  }, [Teq, lightDir]);
+
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: planetVertex,
+    fragmentShader: planetFragment,
+  }), [uniforms]);
+
+  useFrame((_, dt) => {
+    (mat.uniforms.uTime.value as number) += dt;
+    if (mesh.current) {
+      mesh.current.rotation.y += dt * 0.5; // velocidade de rotação ajustável
+    }
+  });
 
   return (
     <mesh
       position={[px, py, pz]}
+      ref={mesh}
       onClick={() => onFocus?.([px, py, pz])}
       onPointerOver={(e) => {
         setHovered(true)
@@ -210,7 +246,7 @@ function Exoplanet({
       }}
     >
       <sphereGeometry args={[radius, 32, 32]} />
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={hovered ? 0.5 : 0.2} />
+      <primitive object={mat} attach="material" />
     </mesh>
   )
 }
@@ -224,6 +260,13 @@ function Scene({
   onHoverPlanet?: (info: { name?: string; x?: number; y?: number; visible: boolean }) => void
   autoRotate: boolean
 }) {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    gl.outputColorSpace = THREE.SRGBColorSpace;
+    gl.toneMapping = THREE.ACESFilmicToneMapping;
+  }, [gl]);
+
   const planets = useMemo<ExoplanetData[]>(
     () =>
       (exoplanets as RawExo[]).map((p) => {
@@ -236,6 +279,13 @@ function Scene({
           z: p.z,
           mass,
           massLabel: label,
+          pl_rade: p.pl_rade,
+          st_teff: p.st_teff,
+          st_rad: p.st_rad,
+          st_mass: p.st_mass,
+          pl_orbsmax: p.pl_orbsmax,
+          pl_orbper: p.pl_orbper,
+          pl_eqt: p.pl_eqt,
         }
       }),
     [],
@@ -312,6 +362,7 @@ function Scene({
             planet={exo}
             onFocus={(pos) => {
               const controls = controlsRef.current
+              console.log(exo)
               if (controls) {
                 const cam = controls.object
                 const V = (cam as any).up.constructor

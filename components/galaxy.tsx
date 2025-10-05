@@ -12,6 +12,7 @@ import { X } from "lucide-react"
 import { Sun } from "./sun"
 import { Earth } from "./earth"
 import { parseMass } from "@/utils/parseMass"
+import { Exoplanet } from "./exoplanet"
 
 export type ExoplanetData = {
   name: string
@@ -131,54 +132,6 @@ export function toScenePosDeterministic(
   return [nx * r + jx, ny * r + jy, nz * r + jz]
 }
 
-function Exoplanet({
-  planet,
-  onFocus,
-}: {
-  planet: ExoplanetData | null
-  onFocus?: (pos: [number, number, number]) => void
-}) {
-  if (!planet) return null
-
-  const [px, py, pz] = toScenePosDeterministic(planet.x, planet.y, planet.z, planet.id)
-  const radius = massToRadius(planet.pl_masse)
-
-  const mesh = useRef<THREE.Mesh>(null);
-  const Teq = computeTeq(planet);
-  // depois de calcular [px, py, pz]
-  const lightDir = useMemo(() => new THREE.Vector3(-px, -py, -pz).normalize(), [px, py, pz]);
-
-  const uniforms = useMemo(() => {
-    const u = retrieveUniforms(Teq);
-    (u.uLightDir.value as THREE.Vector3).copy(lightDir); // atualiza direção
-    return u;
-  }, [Teq, lightDir]);
-
-  const mat = useMemo(() => new THREE.ShaderMaterial({
-    uniforms,
-    vertexShader: planetVertex,
-    fragmentShader: planetFragment,
-  }), [uniforms]);
-
-  useFrame((_, dt) => {
-    (mat.uniforms.uTime.value as number) += dt;
-    if (mesh.current) {
-      mesh.current.rotation.y += dt * 0.5; // velocidade de rotação ajustável
-    }
-  });
-
-  return (
-    <mesh
-      position={[px, py, pz]}
-      ref={mesh}
-      onClick={() => onFocus?.([px, py, pz])}
-    >
-      <sphereGeometry args={[radius, 32, 32]} />
-      <primitive object={mat} attach="material" />
-    </mesh>
-  )
-}
-
 function Scene({
   onSelectPlanet,
   onUserInteraction, // << NOVO
@@ -195,6 +148,8 @@ function Scene({
     gl.outputColorSpace = THREE.SRGBColorSpace;
     gl.toneMapping = THREE.ACESFilmicToneMapping;
   }, [gl]);
+
+  const [isFetching, setIsFetching] = useState(false)
 
   const planets = useMemo<ExoplanetData[]>(
     () =>
@@ -367,6 +322,7 @@ function Scene({
           <Exoplanet
             key={exo.id}
             planet={exo}
+            position={toScenePosDeterministic(exo.x, exo.y, exo.z, exo.id)}
             onFocus={(pos) => {
               const controls = controlsRef.current
               if (controls) {

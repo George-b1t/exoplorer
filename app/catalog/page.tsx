@@ -10,16 +10,13 @@ import { Label } from "@/components/ui/label"
 import { exoplanets, RawExo } from "@/lib/exo"
 import { Search } from "lucide-react"
 
-import * as THREE from "three"
-import { Canvas, useFrame } from "@react-three/fiber"
+import { Canvas } from "@react-three/fiber"
 
 // 🌌 — shaders e utils que você já tem no projeto
-import { planetFragment, planetVertex } from "@/shaders/PlanetBase.glsl"
-import { computeTeq } from "@/utils/equivalentTempUtils"
 import { parseMass } from "@/utils/parseMass"
-import { retrieveUniforms } from "@/constants/uniforms"
 
-import { ExoplanetData, massToRadius } from "@/components/galaxy"
+import { ExoplanetData } from "@/components/galaxy"
+import { Exoplanet } from "@/components/exoplanet"
 
 /** ---------- Mini preview com material shaderizado ---------- */
 function MiniPlanetPreview({ planet }: { planet: ExoplanetData }) {
@@ -35,46 +32,6 @@ function MiniPlanetPreview({ planet }: { planet: ExoplanetData }) {
       <directionalLight position={[1.5, 1.2, 1.8]} intensity={0.5} />
       <Exoplanet planet={planet} />
     </Canvas>
-  )
-}
-
-export function Exoplanet({
-  planet,
-}: {
-  planet: ExoplanetData | null
-}) {
-  if (!planet) return null
-
-  const radius = massToRadius(planet.pl_masse)
-
-  const mesh = useRef<THREE.Mesh>(null);
-  const Teq = computeTeq(planet);
-
-  const uniforms = useMemo(() => {
-    const u = retrieveUniforms(Teq);
-    return u;
-  }, [Teq]);
-
-  const mat = useMemo(() => new THREE.ShaderMaterial({
-    uniforms,
-    vertexShader: planetVertex,
-    fragmentShader: planetFragment,
-  }), [uniforms]);
-
-  useFrame((_, dt) => {
-    (mat.uniforms.uTime.value as number) += dt;
-    if (mesh.current) {
-      mesh.current.rotation.y += dt * 0.5; // velocidade de rotação ajustável
-    }
-  });
-
-  return (
-    <mesh
-      ref={mesh}
-    >
-      <sphereGeometry args={[radius, 32, 32]} />
-      <primitive object={mat} attach="material" />
-    </mesh>
   )
 }
 

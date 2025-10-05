@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useRef } from "react"
+import { useState, useMemo, useRef, useEffect } from "react"
 import { useMode } from "@/contexts/mode-context"
 import { Header } from "@/components/header"
 import { SpaceBackground } from "@/components/space-background"
@@ -8,7 +8,12 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { exoplanets, RawExo } from "@/lib/exo"
-import { Search } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon, Search } from "lucide-react"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+} from "@/components/ui/pagination"
 
 import { Canvas } from "@react-three/fiber"
 
@@ -17,6 +22,7 @@ import { parseMass } from "@/utils/parseMass"
 
 import { ExoplanetData } from "@/components/galaxy"
 import { Exoplanet } from "@/components/exoplanet"
+import { Button } from "@/components/ui/button"
 
 /** ---------- Mini preview com material shaderizado ---------- */
 function MiniPlanetPreview({ planet }: { planet: ExoplanetData }) {
@@ -50,7 +56,7 @@ export default function CatalogPage() {
 
   const planets = useMemo<ExoplanetData[]>(
     () =>
-      (exoplanets as RawExo[]).slice(0, 50).map((p) => {
+      (exoplanets as RawExo[]).map((p) => {
         const { mass } = parseMass(p.pl_masse ?? null)
         return {
           name: p.name,
@@ -106,6 +112,38 @@ export default function CatalogPage() {
       return true
     })
   }, [planets, searchTerm, filters])
+
+  const displayPlanets = useMemo(() => {
+    return filteredPlanets.filter(p => p.pl_masse != null)
+  }, [filteredPlanets])
+
+  // Como voce acha que eu posso paginar isso aqui? De forma simples o numero de intens por pagina vai ser fixo a 8 por pagina.
+  // Eu posso fazer isso no front ou no back? O que voce sugere? no front pois esses planetas estao mockados no exoplanets
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 8
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, filters])
+
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(displayPlanets.length / itemsPerPage))
+  }, [displayPlanets.length])
+
+  useEffect(() => {
+    setCurrentPage((p) => Math.min(p, totalPages))
+  }, [totalPages])
+
+  // Paginação
+  const paginatedPlanets = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return displayPlanets.slice(startIndex, startIndex + itemsPerPage)
+  }, [displayPlanets, currentPage, itemsPerPage])
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return
+    setCurrentPage(newPage)
+  }
 
   const isEducational = mode === "educational"
 
@@ -205,13 +243,13 @@ export default function CatalogPage() {
               </div>
 
               <div className="text-sm text-white/60">
-                {filteredPlanets.length} {filteredPlanets.length === 1 ? "planeta encontrado" : "planetas encontrados"}
+                {displayPlanets.length} {displayPlanets.length === 1 ? "planeta encontrado" : "planetas encontrados"}
               </div>
             </div>
           </Card>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {planets
+            {paginatedPlanets
                     .filter((exo) => exo.pl_masse != null)
                     .map((exo) => (
               <Card
@@ -230,11 +268,21 @@ export default function CatalogPage() {
                     <div className="space-y-1 text-xs">
                       <div className="flex justify-between">
                         <span className="text-white/60">{isEducational ? "Massa:" : "Mass:"}</span>
-                        <span className="font-medium text-white">{exo.pl_masse} Earths</span>
+                        <span className="font-medium text-white">
+                          {exo.pl_masse != null ? (() => {
+                            const n = typeof exo.pl_masse === "number" ? exo.pl_masse : parseFloat(String(exo.pl_masse));
+                            return Number.isFinite(n) ? `${n.toFixed(1)} Earths` : "—";
+                          })() : "—"}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/60">{isEducational ? "Tamanho:" : "Radius:"}</span>
-                        <span className="font-medium text-white">{exo.pl_rade} x Earth</span>
+                        <span className="font-medium text-white">
+                          {exo.pl_rade != null ? (() => {
+                            const n = typeof exo.pl_rade === "number" ? exo.pl_rade : parseFloat(String(exo.pl_rade));
+                            return Number.isFinite(n) ? `${n.toFixed(1)} x Earths` : "—";
+                          })() : "—"}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/60">{isEducational ? "Temperatura:" : "Temp:"}</span>
@@ -247,10 +295,50 @@ export default function CatalogPage() {
             ))}
           </div>
 
-          {filteredPlanets.length === 0 && (
+          {paginatedPlanets.length === 0 && (
             <div className="text-center py-12">
               <p className="text-white/60 text-lg">Nenhum planeta encontrado com esses critérios.</p>
             </div>
+          )}
+
+          {paginatedPlanets.length > 0 && (
+            <Pagination className="text-white mt-4">
+              <PaginationContent className="w-full justify-between gap-3">
+                <PaginationItem>
+                  <Button
+                    variant="outline"
+                    className="aria-disabled:pointer-events-none aria-disabled:opacity-50 cursor-pointer hover:bg-white/10 rounded-[5px]"
+                    aria-disabled={currentPage === 1 ? true : undefined}
+                    role={currentPage === 1 ? "link" : undefined}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                  >
+                    <ChevronLeftIcon
+                      className="-ms-1 opacity-60"
+                      size={16}
+                      aria-hidden="true"
+                    />
+                    Previous
+                  </Button>
+                </PaginationItem>
+                <PaginationItem>
+                  <Button
+                    variant="outline"
+                    className="aria-disabled:pointer-events-none aria-disabled:opacity-50 cursor-pointer hover:bg-white/10 rounded-[5px]"
+                    aria-disabled={currentPage === totalPages ? true : undefined}
+                    role={currentPage === totalPages ? "link" : undefined}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    
+                  >
+                    Next
+                    <ChevronRightIcon
+                      className="-me-1 opacity-60"
+                      size={16}
+                      aria-hidden="true"
+                    />
+                  </Button>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           )}
         </main>
       </div>

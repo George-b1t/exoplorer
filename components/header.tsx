@@ -34,13 +34,19 @@ export function Header() {
                 Galáxia 3D
               </Link>
               <Link
+                href="/training"
+                className="text-sm font-medium text-white/80 hover:text-nebula-pink transition-colors"
+              >
+                Treinar IA
+              </Link>
+              <Link
                 href="/about"
                 className="text-sm font-medium text-white/80 hover:text-nebula-pink transition-colors"
               >
                 Sobre
               </Link>
 
-              {mode && <ModeSwitcherDialog />}
+              <ModeSwitcherDialog />
             </nav>
           </div>
         </div>

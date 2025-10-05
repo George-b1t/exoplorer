@@ -4,6 +4,8 @@ import { useMemo, useRef, useEffect, useState } from "react"
 import { Canvas, useFrame } from "@react-three/fiber"
 import { OrbitControls, Stars, Html, useCursor } from "@react-three/drei"
 import { exoplanets } from "@/lib/exo"
+import { Button } from "@/components/ui/button"
+import { RotateCw, Pause } from "lucide-react"
 
 type RawExo = {
   name: string
@@ -216,9 +218,11 @@ function Exoplanet({
 function Scene({
   onSelectPlanet,
   onHoverPlanet,
+  autoRotate,
 }: {
   onSelectPlanet?: (p: ExoplanetData) => void
   onHoverPlanet?: (info: { name?: string; x?: number; y?: number; visible: boolean }) => void
+  autoRotate: boolean
 }) {
   const planets = useMemo<ExoplanetData[]>(
     () =>
@@ -254,7 +258,6 @@ function Scene({
     controlsRef.current?.update?.()
   }
 
-  // Loop por frame para suavizar o movimento de câmera/target quando houver animação ativa
   useFrame(() => {
     const controls = controlsRef.current
     const anim = animRef.current
@@ -345,7 +348,7 @@ function Scene({
         minDistance={2}
         maxDistance={800}
         target={EARTH_POS}
-        autoRotate={true}
+        autoRotate={autoRotate}
         autoRotateSpeed={1}
       />
     </>
@@ -360,6 +363,7 @@ export function Galaxy() {
     x: 0,
     y: 0,
   })
+  const [autoRotate, setAutoRotate] = useState(true)
 
   useEffect(() => {
     const onEsc = (e: KeyboardEvent) => {
@@ -381,8 +385,21 @@ export function Galaxy() {
               setTooltip((t) => ({ ...t, visible: false }))
             }
           }}
+          autoRotate={autoRotate}
         />
       </Canvas>
+
+      <div className="absolute top-4 right-4 z-50">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => setAutoRotate(!autoRotate)}
+          className="bg-black/80 backdrop-blur-md border-nebula-purple/30 hover:border-nebula-purple text-white hover:bg-nebula-purple/20"
+        >
+          {autoRotate ? <Pause className="w-4 h-4 mr-2" /> : <RotateCw className="w-4 h-4 mr-2" />}
+          {autoRotate ? "Pausar Rotação" : "Ativar Rotação"}
+        </Button>
+      </div>
 
       {tooltip.visible && (
         <div className="fixed pointer-events-none z-50" style={{ left: tooltip.x + 12, top: tooltip.y + 12 }}>

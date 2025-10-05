@@ -41,7 +41,7 @@ export default function AboutPage() {
               <div className="relative">
                 <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-nebula-purple/20 to-cosmic-cyan/20 border-2 border-nebula-purple/30 backdrop-blur-sm">
                   <img
-                    src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202025-10-04%20at%2020.28.21-DDEK3lV3xySb4CMRMe9a3k6wNCD9l5.png"
+                    src="/images/design-mode/Screenshot%202025-10-04%20at%2020.28.21.png"
                     alt="MoonMonkeys Astronaut"
                     className="w-full h-full object-cover"
                   />

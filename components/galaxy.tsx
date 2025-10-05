@@ -196,9 +196,6 @@ function Exoplanet({
   onFocus?: (pos: [number, number, number]) => void
   onHover?: (info: { name?: string; x?: number; y?: number; visible: boolean }) => void
 }) {
-  const [hovered, setHovered] = useState(false)
-  useCursor(hovered)
-
   if (!planet) return null
 
   const [px, py, pz] = toScenePosDeterministic(planet.x, planet.y, planet.z, planet.id)
@@ -233,17 +230,6 @@ function Exoplanet({
       position={[px, py, pz]}
       ref={mesh}
       onClick={() => onFocus?.([px, py, pz])}
-      onPointerOver={(e) => {
-        setHovered(true)
-        onHover?.({ name: planet.name, x: e.clientX, y: e.clientY, visible: true })
-      }}
-      onPointerMove={(e) => {
-        if (hovered) onHover?.({ name: planet.name, x: e.clientX, y: e.clientY, visible: true })
-      }}
-      onPointerOut={() => {
-        setHovered(false)
-        onHover?.({ visible: false })
-      }}
     >
       <sphereGeometry args={[radius, 32, 32]} />
       <primitive object={mat} attach="material" />

@@ -170,7 +170,7 @@ export default function TrainingPage() {
         <main className="container mx-auto px-4 py-12">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold mb-4 text-white">Treinar Modelo de IA</h1>
+              <h1 className="text-4xl font-bold mb-4 text-white">Alimentar Modelo de IA</h1>
               <p className="text-white/80 text-lg">
                 {isEducational
                   ? "Configure os dados dos planetas e ajuste os parâmetros para treinar o modelo"
@@ -179,87 +179,8 @@ export default function TrainingPage() {
             </div>
 
             <div className="grid lg:grid-cols-3 gap-6 mb-8">
-              {/* Hyperparameters Card */}
-              <Card className="p-6 bg-card/80 backdrop-blur-sm border-2 border-cosmic-cyan/30 lg:col-span-1">
-                <div className="flex items-center gap-2 mb-6">
-                  <Brain className="w-6 h-6 text-cosmic-cyan" />
-                  <h2 className="text-xl font-bold text-white">Hiperparâmetros</h2>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="maxDepth" className="text-white mb-2 block">
-                      {isEducational ? "Altura Máxima da Árvore" : "Max Depth"}
-                    </Label>
-                    <Input
-                      id="maxDepth"
-                      type="number"
-                      value={hyperparameters.maxDepth}
-                      onChange={(e) => setHyperparameters({ ...hyperparameters, maxDepth: e.target.value })}
-                      className="bg-deep-space/50 border-cosmic-cyan/30 text-white"
-                    />
-                    {isEducational && (
-                      <p className="text-xs text-white/60 mt-1">
-                        Controla a profundidade máxima das árvores de decisão
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="learningRate" className="text-white mb-2 block">
-                      {isEducational ? "Taxa de Aprendizagem" : "Learning Rate"}
-                    </Label>
-                    <Input
-                      id="learningRate"
-                      type="number"
-                      step="0.01"
-                      value={hyperparameters.learningRate}
-                      onChange={(e) => setHyperparameters({ ...hyperparameters, learningRate: e.target.value })}
-                      className="bg-deep-space/50 border-cosmic-cyan/30 text-white"
-                    />
-                    {isEducational && (
-                      <p className="text-xs text-white/60 mt-1">Define a velocidade de aprendizado entre árvores</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="nEstimators" className="text-white mb-2 block">
-                      {isEducational ? "Número de Árvores" : "N Estimators"}
-                    </Label>
-                    <Input
-                      id="nEstimators"
-                      type="number"
-                      value={hyperparameters.nEstimators}
-                      onChange={(e) => setHyperparameters({ ...hyperparameters, nEstimators: e.target.value })}
-                      className="bg-deep-space/50 border-cosmic-cyan/30 text-white"
-                    />
-                    {isEducational && (
-                      <p className="text-xs text-white/60 mt-1">Quantidade total de árvores no modelo</p>
-                    )}
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleTrain}
-                  disabled={isTraining}
-                  className="w-full mt-6 bg-gradient-to-r from-cosmic-cyan to-nebula-purple hover:from-cosmic-cyan/80 hover:to-nebula-purple/80 text-white"
-                >
-                  {isTraining ? (
-                    <>
-                      <Brain className="w-5 h-5 mr-2 animate-spin" />
-                      Treinando...
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-5 h-5 mr-2" />
-                      Treinar Modelo
-                    </>
-                  )}
-                </Button>
-              </Card>
-
               {/* Planets Data Card */}
-              <Card className="p-6 bg-card/80 backdrop-blur-sm border-2 border-nebula-purple/30 lg:col-span-2">
+              <Card className="p-6 bg-card/80 backdrop-blur-sm border-2 border-nebula-purple/30 lg:col-span-3">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold text-white">Dados dos Planetas</h2>
                   <div className="flex gap-2">

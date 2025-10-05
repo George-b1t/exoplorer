@@ -132,16 +132,6 @@ export default function ResultsPage() {
                             <span className="font-medium text-white">{planet.orbitalPeriod} days</span>
                           </div>
                         </div>
-
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="mt-4 w-full border-cosmic-cyan/30 hover:border-cosmic-cyan text-white hover:bg-cosmic-cyan/10 bg-transparent"
-                          onClick={() => router.push(`/galaxy?planet=${planet.id}`)}
-                        >
-                          <Globe className="w-4 h-4 mr-2" />
-                          Ver Planeta na Galáxia
-                        </Button>
                       </div>
                     </div>
                   </Card>

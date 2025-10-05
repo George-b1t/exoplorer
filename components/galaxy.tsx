@@ -427,7 +427,7 @@ function Scene({
     <>
       <ambientLight intensity={0.3} />
       <pointLight position={[0, 0, 0]} intensity={1} color="#FDB813" />
-      <Stars radius={300} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+      {/* <Stars radius={300} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */}
 
       {/* Sol + halo */}
       <Sun onFocus={(pos) => animateTo(pos, 2)} />

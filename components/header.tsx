@@ -22,6 +22,12 @@ export function Header() {
 
             <nav className="flex items-center gap-6">
               <Link
+                href="/search"
+                className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
+              >
+                Busca
+              </Link>
+              <Link
                 href="/catalog"
                 className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
               >
@@ -29,19 +35,19 @@ export function Header() {
               </Link>
               <Link
                 href="/galaxy"
-                className="text-sm font-medium text-white/80 hover:text-nebula-purple transition-colors"
+                className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
               >
                 Galáxia 3D
               </Link>
               <Link
                 href="/training"
-                className="text-sm font-medium text-white/80 hover:text-nebula-pink transition-colors"
+                className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
               >
                 Treinar IA
               </Link>
               <Link
                 href="/about"
-                className="text-sm font-medium text-white/80 hover:text-nebula-pink transition-colors"
+                className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
               >
                 Sobre
               </Link>

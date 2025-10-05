@@ -5,11 +5,10 @@ import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber"
 import { OrbitControls, Stars, Html } from "@react-three/drei"
 import * as THREE from "three"
 import { exoplanets } from "@/lib/exo"
-import { Button } from "@/components/ui/button"
-import { RotateCw, Pause } from "lucide-react"
 import { planetFragment, planetVertex } from "@/shaders/PlanetBase.glsl"
 import { computeTeq } from "@/utils/equivalentTempUtils"
 import { retrieveUniforms } from "@/constants/uniforms"
+import { X } from "lucide-react"
 
 type RawExo = {
   name: string
@@ -39,6 +38,20 @@ export type ExoplanetData = {
   /** Texto para exibir (ex.: "2.1", "< 0.8", "—") */
   massLabel: string
   pl_rade: number | null;
+  st_teff: number | null; 
+  st_rad: number | null; 
+  st_mass: number | null;
+  pl_orbsmax: number | null; 
+  pl_orbper: number | null; 
+  pl_eqt: number | null;
+  isPlanet: number | null;
+}
+
+export type Planet = {
+  objectid: string
+  pl_name: string
+  pl_massj: number | null
+  pl_radj: number | null;
   st_teff: number | null; 
   st_rad: number | null; 
   st_mass: number | null;
@@ -147,15 +160,6 @@ export function massToRadius(mass?: number | null): number {
   // Evita pontos grandes demais ou minúsculos
   return Math.min(Math.max(r, 0.35), 1.6) * 0.3
 }
-
-/** Cor por faixa de massa (M⊕) para leitura rápida. */
-function massToColor(mass?: number | null): string {
-  if (mass == null) return "#E8B4F0" // padrão
-  if (mass < 1.5) return "#E8B4F0" // sub-terra/super-terra leve
-  if (mass < 10) return "#C99AF0" // mini/Netuno
-  return "#F06ACF" // >10 M⊕ (mais massivo)
-}
-
 // --- Posicionamento determinístico para eliminar o efeito de "casca" ---
 // Hash simples para gerar seed a partir de string
 function hashStringToSeed(str: string): number {
@@ -285,7 +289,7 @@ function Scene({
   onUserInteraction, // << NOVO
   autoRotate,
 }: {
-  onSelectPlanet?: (p: ExoplanetData) => void
+  onSelectPlanet?: (p: Planet) => void
   onHoverPlanet?: (info: { name?: string; x?: number; y?: number; visible: boolean }) => void
   onUserInteraction?: () => void // << NOVO
   autoRotate: boolean
@@ -347,6 +351,36 @@ function Scene({
   }
 
   const controlsRef = useRef<any>(null)
+
+  function normalizePlanetPayload(payload: any): Planet {
+    // Algumas APIs retornam {"0": {...}}, outras já retornam direto {...}
+    const rec = payload?.[0] ?? payload?.["0"] ?? payload ?? {}
+
+    // Garanta null para campos ausentes e coerção leve de tipos
+    return {
+      objectid: String(rec.objectid ?? ""),
+      pl_name: rec.pl_name ?? rec.pl_name ?? "",
+      pl_massj: rec.pl_massj ?? null,     // M_J (Júpiter), ver nota abaixo
+      pl_radj: rec.pl_radj ?? null,       // R_⊕
+      st_teff: rec.st_teff ?? null,
+      st_rad: rec.st_rad ?? null,
+      st_mass: rec.st_mass ?? null,
+      pl_orbsmax: rec.pl_orbsmax ?? null, // AU
+      pl_orbper: rec.pl_orbper ?? null,   // dias
+      pl_eqt: rec.pl_eqt ?? null,         // K
+      isPlanet: rec.isPlanet ?? null,     // pode vir da lista local
+    }
+  }
+
+  const handleSelectPlanet = async (planetName: string) => {
+    const response = await fetch(`http://82.25.69.243:8000/api/v1/exoplanets/${planetName}`)
+    const json = await response.json()
+    // nessa rota eu tenho certeza q n vem isPlanet como posso pegar do objeto exoplanet?
+    const isPlanet = exoplanets.find((p) => p.name === planetName)?.isPlanet ?? null;
+    const normalized = normalizePlanetPayload(json)
+    normalized.isPlanet = isPlanet
+    onSelectPlanet?.(normalized)
+  }
 
   // Escuta eventos do OrbitControls para detectar interação do usuário
   useEffect(() => {
@@ -441,7 +475,6 @@ function Scene({
             planet={exo}
             onFocus={(pos) => {
               const controls = controlsRef.current
-              console.log(exo)
               if (controls) {
                 const cam = controls.object
                 const V = (cam as any).up.constructor
@@ -463,7 +496,7 @@ function Scene({
                   toTarget,
                 }
               }
-              onSelectPlanet?.(exo)
+              handleSelectPlanet(exo.name)
             }}
           />
         ))}
@@ -485,7 +518,7 @@ function Scene({
 }
 
 export function Galaxy() {
-  const [selected, setSelected] = useState<ExoplanetData | null>(null)
+  const [selected, setSelected] = useState<Planet | null>(null)
   const [tooltip, setTooltip] = useState({ visible: false, text: "", x: 0, y: 0 })
   const [autoRotate, setAutoRotate] = useState(true) // ligado por padrão
   const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -531,75 +564,74 @@ export function Galaxy() {
           <div className="bg-black/90 text-white rounded-xl p-5 w-[min(90vw,420px)] shadow-2xl border-2 border-nebula-purple/40 backdrop-blur-md">
             <div className="flex items-center justify-between mb-4">
               <div className="text-lg font-bold bg-gradient-to-r from-nebula-purple to-cosmic-cyan bg-clip-text text-transparent">
-                {selected.name}
+                {selected.pl_name}
               </div>
               <button
-                className="text-white/70 hover:text-white text-sm px-3 py-1 rounded-lg hover:bg-white/10 transition-colors"
+                className="text-white/70 hover:text-white text-sm px-1 py-1 rounded hover:bg-white/10 transition-colors"
                 onClick={() => setSelected(null)}
               >
-                Fechar
+                <X size={16} />
               </button>
             </div>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between items-center py-2 border-b border-white/10">
                 <span className="text-white/60">ID:</span>
-                <span className="font-mono text-white/90">{selected.id}</span>
+                <span className="font-mono text-white/90">{selected.objectid}</span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-white/60">Massa:</span>
-                <span className="font-semibold text-nebula-pink">{selected.massLabel} M⊕</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/10">
-                <span className="text-white/60">Raio:</span>
+                <span className="text-white/60">Planet Mass Comparison:</span>
                 <span className="font-semibold text-nebula-pink">
-                  {selected.pl_rade != null ? `${selected.pl_rade} R⊕` : "—"}
+                  {selected.pl_massj != null ? `${selected.pl_massj} Jupiters` : "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-white/60">Temperatura Equivalente:</span>
+                <span className="text-white/60">Planet Radius Comparison:</span>
+                <span className="font-semibold text-nebula-pink">
+                  {selected.pl_radj != null ? `${selected.pl_radj} x Jupiter` : "—"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-white/10">
+                <span className="text-white/60">Equilibrium Temperature:</span>
                 <span className="font-semibold text-nebula-pink">
                   {selected.pl_eqt != null ? `${selected.pl_eqt} K` : "—"}
                 </span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-white/10">
-                <span className="text-white/60">Estrela Hospedeira (Teff):</span>
-                <span className="font-semibold text-nebula-pink">
-                  {selected.st_teff != null ? `${selected.st_teff} K` : "—"}
-                </span>
-              </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-white/60">Estrela Hospedeira (Massa):</span>
+                <span className="text-white/60">Star Mass Comparison:</span>
                 <span className="font-semibold text-nebula-pink">
-                  {selected.st_mass != null ? `${selected.st_mass} M☉` : "—"}
+                  {selected.st_mass != null ? `${selected.st_mass} x Our Sun` : "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-white/10">
-                <span className="text-white/60">Estrela Hospedeira (Raio):</span>
+                <span className="text-white/60">Star Radius Comparison:</span>
                 <span className="font-semibold text-nebula-pink">
-                  {selected.st_rad != null ? `${selected.st_rad} R☉` : "—"}
+                  {selected.st_rad != null ? `${selected.st_rad} x Our Sun` : "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-white/60">Semi-eixo maior (a):</span>
+                <span className="text-white/60">Orbital Radius:</span>
                 <span className="font-semibold text-nebula-pink">
-                  {selected.pl_orbsmax != null ? `${selected.pl_orbsmax} UA` : "—"}
+                  {selected.pl_orbsmax != null ? `${selected.pl_orbsmax} AU` : "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-white/10">
-                <span className="text-white/60">Período Orbital:</span>
+                <span className="text-white/60">Orbital Period:</span>
                 <span className="font-semibold text-nebula-pink">
-                  {selected.pl_orbper != null ? `${selected.pl_orbper} dias` : "—"}
+                  {selected.pl_orbper != null ? (() => {
+                    const n = typeof selected.pl_orbper === "number" ? selected.pl_orbper : parseFloat(String(selected.pl_orbper));
+                    return Number.isFinite(n) ? `${n.toFixed(1)} days` : "—";
+                  })() : "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-white/60">Tipo:</span>
+                <span className="text-white/60">Type:</span>
                 <span className="font-semibold text-nebula-pink">
-                  {selected.isPlanet === 1 ? "Planeta" : selected.isPlanet === 0 ? "Candidato" : "—"}
+                  {selected.isPlanet === 1 ? "Planet" : selected.isPlanet === 0 ? "Candidate" : "—"}
                 </span>
               </div>
             </div>
             <div className="mt-6 text-xs text-white/50 italic">
-              Dados de exoplanetas fornecidos por NASA Exoplanet Archive.
+              Exoplanet data provided by NASA Exoplanet Archive.
             </div>
           </div>
         </div>

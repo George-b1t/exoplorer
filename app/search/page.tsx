@@ -11,7 +11,8 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
-import { Search, ChevronDown, ChevronUp } from "lucide-react"
+import { Search, ChevronDown, ChevronUp, Loader2 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 // Valores padrão da Terra
 const EARTH_DEFAULTS = {
@@ -21,29 +22,31 @@ const EARTH_DEFAULTS = {
   planetRadius: 1.0,
   planetInsolation: 1.0,
   planetEqTemp: 255,
-  stellarTeff: 5778,
+  stellarTeff: 5770,
   stellarLogg: 4.44,
   stellarRadius: 1.0,
 }
 
 // Ranges para os sliders
 const RANGES = {
-  orbitalPeriod: { min: 0, max: 5000, step: 1 },
-  transitDuration: { min: 0, max: 24, step: 0.1 },
-  transitDepth: { min: 0, max: 50000, step: 1 },
-  planetRadius: { min: 0, max: 30, step: 0.1 },
-  planetInsolation: { min: 0, max: 100, step: 0.1 },
-  planetEqTemp: { min: 0, max: 3000, step: 1 },
-  stellarTeff: { min: 2000, max: 50000, step: 10 },
-  stellarLogg: { min: 0, max: 6, step: 0.01 },
-  stellarRadius: { min: 0, max: 20, step: 0.1 },
+  orbitalPeriod: { min: 0.20, max: 1837, step: 0.1 },
+  transitDuration: { min: 0.1, max: 30, step: 0.1 },
+  transitDepth: { min: 12.2, max: 145640, step: 0.1 },
+  planetRadius: { min: 0.27, max: 140.1, step: 0.1 },
+  planetInsolation: { min: 0.0, max: 238125, step: 0.1 },
+  planetEqTemp: { min: 37, max: 5634, step: 0.1 },
+  stellarTeff: { min: 2703, max: 50000, step: 0.1 },
+  stellarLogg: { min: 0.2, max: 5.8, step: 0.1 },
+  stellarRadius: { min: 0.1, max: 19.5, step: 0.1 },
 }
 
 export default function SearchPage() {
   const { mode } = useMode()
   const router = useRouter()
+  const { toast } = useToast()
 
   const [dataSource, setDataSource] = useState<"platform" | "user" | "both">("platform")
+  const [isLoading, setIsLoading] = useState(false)
 
   const [hyperparameters, setHyperparameters] = useState({
     maxDepth: "3",
@@ -81,19 +84,98 @@ export default function SearchPage() {
     }
   }, [mode])
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const params = new URLSearchParams()
+    setIsLoading(true)
 
-    params.append("dataSource", dataSource)
-    params.append("maxDepth", hyperparameters.maxDepth)
-    params.append("learningRate", hyperparameters.learningRate)
-    params.append("nEstimators", hyperparameters.nEstimators)
+    try {
+      // Map dataSource to sessionMode
+      const sessionModeMap = {
+        platform: "baseline",
+        user: "session_only",
+        both: "sum",
+      }
 
-    Object.entries(formData).forEach(([key, value]) => {
-      if (value) params.append(key, value)
-    })
-    router.push(`/results?${params.toString()}`)
+      // Build query parameters for the API
+      const params = new URLSearchParams()
+
+      // Add sessionMode
+      params.append("sessionMode", sessionModeMap[dataSource])
+
+      // Add hyperparameters if they have values
+      if (hyperparameters.maxDepth) {
+        params.append("max_depth", hyperparameters.maxDepth)
+      }
+      if (hyperparameters.learningRate) {
+        params.append("learning_rate", hyperparameters.learningRate)
+      }
+      if (hyperparameters.nEstimators) {
+        params.append("n_estimators", hyperparameters.nEstimators)
+      }
+
+      // Add planetary and stellar parameters with correct API field names
+      const fieldMapping = {
+        orbitalPeriod: "ORBITAL_PERIOD_DAYS",
+        transitDuration: "TRANSIT_DURATION_HOURS",
+        transitDepth: "TRANSIT_DEPTH_PPM",
+        planetRadius: "PLANET_RADIUS_REARTH",
+        planetInsolation: "PLANET_INSOLATION_EFLUX",
+        planetEqTemp: "PLANET_EQ_TEMP_K",
+        stellarTeff: "STELLAR_TEFF_K",
+        stellarLogg: "STELLAR_LOGG_CMS2",
+        stellarRadius: "STELLAR_RADIUS_RSUN",
+      }
+
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value) {
+          const apiFieldName = fieldMapping[key as keyof typeof fieldMapping]
+          params.append(apiFieldName, value)
+        }
+      })
+
+      // Call the backend API
+      const response = await fetch(`http://82.25.69.243:8000/api/v1/predict?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`)
+      }
+
+      const result = await response.json()
+
+      // Save the result to localStorage
+      localStorage.setItem("predictionResult", JSON.stringify(result))
+      localStorage.setItem(
+        "predictionParams",
+        JSON.stringify({
+          dataSource,
+          hyperparameters,
+          formData,
+          timestamp: new Date().toISOString(),
+        }),
+      )
+
+      toast({
+        title: "Análise concluída!",
+        description: "Os resultados foram salvos com sucesso.",
+      })
+
+      // Redirect to results page
+      router.push("/results")
+    } catch (error) {
+      console.error("[v0] Error calling prediction API:", error)
+      toast({
+        title: "Erro na análise",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao processar sua solicitação.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const isEducational = mode === "educational"
@@ -466,10 +548,20 @@ export default function SearchPage() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full bg-gradient-to-r from-nebula-purple to-cosmic-cyan hover:from-nebula-purple/80 hover:to-cosmic-cyan/80 text-white border-0"
+                  disabled={isLoading}
+                  className="w-full bg-gradient-to-r from-nebula-purple to-cosmic-cyan hover:from-nebula-purple/80 hover:to-cosmic-cyan/80 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Search className="w-5 h-5 mr-2" />
-                  Analisar Parâmetros
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Analisando...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-5 h-5 mr-2" />
+                      Analisar Parâmetros
+                    </>
+                  )}
                 </Button>
               </form>
             </Card>

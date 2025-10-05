@@ -345,6 +345,8 @@ function Scene({
         minDistance={2}
         maxDistance={800}
         target={EARTH_POS}
+        autoRotate={true}
+        autoRotateSpeed={1}
       />
     </>
   )

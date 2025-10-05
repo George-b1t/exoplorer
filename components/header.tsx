@@ -1,9 +1,9 @@
 "use client"
 
-import Link from "next/link"
+import { ModeSwitcherDialog } from "@/components/mode-switcher-dialog"
 import { useMode } from "@/contexts/mode-context"
 import { Rocket } from "lucide-react"
-import { ModeSwitcherDialog } from "@/components/mode-switcher-dialog"
+import Link from "next/link"
 
 export function Header() {
   const { mode } = useMode()
@@ -44,6 +44,12 @@ export function Header() {
                 className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
               >
                 Treinar IA
+              </Link>
+              <Link
+                href="/learn"
+                className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
+              >
+                Learn
               </Link>
               <Link
                 href="/about"

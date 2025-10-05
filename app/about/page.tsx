@@ -42,7 +42,7 @@ export default function AboutPage() {
               </div>
 
               <div className="relative">
-                <div className="aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-nebula-purple/20 to-cosmic-cyan/20 border-2 border-nebula-purple/30 backdrop-blur-sm">
+                <div className="aspect-square rounded-2xl overflow-hidden ">
                   <img
                     src="/members/monkey.png"
                     alt="MoonMonkeys Astronaut"
@@ -67,7 +67,6 @@ export default function AboutPage() {
                       </div>
                       <div className="text-center">
                         <h3 className="font-bold text-lg text-white">{member.name}</h3>
-                        <p className="text-sm text-white/70">{member.role}</p>
                       </div>
                     </div>
                   </Card>

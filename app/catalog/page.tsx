@@ -7,7 +7,7 @@ import { SpaceBackground } from "@/components/space-background"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { exoplanets } from "@/lib/exoplanet-data"
+import { exoplanets, RawExo } from "@/lib/exo"
 import { Search } from "lucide-react"
 
 import * as THREE from "three"
@@ -16,65 +16,13 @@ import { Canvas, useFrame } from "@react-three/fiber"
 // 🌌 — shaders e utils que você já tem no projeto
 import { planetFragment, planetVertex } from "@/shaders/PlanetBase.glsl"
 import { computeTeq } from "@/utils/equivalentTempUtils"
+import { parseMass } from "@/utils/parseMass"
 import { retrieveUniforms } from "@/constants/uniforms"
 
-// se já tiver essas duas funções em outro lugar, troque os imports e remova as versões abaixo
-import { massToRadius, toScenePosDeterministic } from "@/components/galaxy"
-
-type CatalogPlanet = {
-  id: string
-  name: string
-  type?: string
-  mass: number            // M⊕
-  radius: number          // R⊕
-  temperature: number     // K
-  distance: number        // anos-luz
-  discoveryYear?: number
-  // se você tiver posições/seed:
-  x?: number; y?: number; z?: number;
-  // quaisquer campos extras usados por computeTeq(...)
-}
+import { ExoplanetData, massToRadius } from "@/components/galaxy"
 
 /** ---------- Mini preview com material shaderizado ---------- */
-function MiniPlanetPreview({ planet }: { planet: CatalogPlanet }) {
-  // posição só para derivar uma direção de luz estável por planeta
-  const [px, py, pz] = useMemo<[number, number, number]>(() => {
-    // se tiver x/y/z use; senão derive por id
-    const x = planet.x ?? 0, y = planet.y ?? 0, z = planet.z ?? 0
-    return toScenePosDeterministic(x, y, z, planet.id)
-  }, [planet])
-
-  const lightDir = useMemo(() => new THREE.Vector3(-px, -py, -pz).normalize(), [px, py, pz])
-
-  // Teq e uniforms iguais ao componente Exoplanet
-  const TeqRaw = computeTeq(planet as any)
-  const Teq = Number.isFinite(TeqRaw) ? TeqRaw : planet.temperature ?? 288
-
-  const uniforms = useMemo(() => {
-    const u = retrieveUniforms(Teq)
-    ;(u.uLightDir.value as THREE.Vector3).copy(lightDir)
-    return u
-  }, [Teq, lightDir])
-
-  const material = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        uniforms,
-        vertexShader: planetVertex,
-        fragmentShader: planetFragment,
-      }),
-    [uniforms]
-  )
-
-  // raio “de cena”: pequeno para caber no card; usa o físico como base
-  const sceneRadius = useMemo(() => {
-    // se você quiser usar o raio físico direto: planet.radius
-    // se preferir converter por massa (fica legal p/ quando não houver radius):
-    const base = Number.isFinite(planet.radius) ? planet.radius : massToRadius(planet.mass)
-    // normaliza p/ o mini-canvas (clamp para não exagerar)
-    return THREE.MathUtils.clamp(base * 0.18, 0.16, 0.36)
-  }, [planet.mass, planet.radius])
-
+function MiniPlanetPreview({ planet }: { planet: ExoplanetData }) {
   return (
     <Canvas
       className="w-full h-full"
@@ -85,24 +33,47 @@ function MiniPlanetPreview({ planet }: { planet: CatalogPlanet }) {
       <ambientLight intensity={0.15} />
       {/* luz direcional alinhada com o shader (opcional, ajuda no contorno do globo) */}
       <directionalLight position={[1.5, 1.2, 1.8]} intensity={0.5} />
-
-      <RotatingPlanet material={material} radius={sceneRadius} />
+      <Exoplanet planet={planet} />
     </Canvas>
   )
 }
 
-function RotatingPlanet({ material, radius }: { material: THREE.ShaderMaterial; radius: number }) {
-  const mesh = useRef<THREE.Mesh>(null)
+export function Exoplanet({
+  planet,
+}: {
+  planet: ExoplanetData | null
+}) {
+  if (!planet) return null
+
+  const radius = massToRadius(planet.pl_masse)
+
+  const mesh = useRef<THREE.Mesh>(null);
+  const Teq = computeTeq(planet);
+
+  const uniforms = useMemo(() => {
+    const u = retrieveUniforms(Teq);
+    return u;
+  }, [Teq]);
+
+  const mat = useMemo(() => new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: planetVertex,
+    fragmentShader: planetFragment,
+  }), [uniforms]);
+
   useFrame((_, dt) => {
-    // anima o tempo do shader e a rotação do globo
-    ;(material.uniforms.uTime.value as number) += dt
-    if (mesh.current) mesh.current.rotation.y += dt * 0.4
-  })
+    (mat.uniforms.uTime.value as number) += dt;
+    if (mesh.current) {
+      mesh.current.rotation.y += dt * 0.5; // velocidade de rotação ajustável
+    }
+  });
+
   return (
-    <mesh ref={mesh}>
-      <sphereGeometry args={[radius, 48, 48]} />
-      {/* attach material via primitive para manter a mesma instância memoizada */}
-      <primitive object={material} attach="material" />
+    <mesh
+      ref={mesh}
+    >
+      <sphereGeometry args={[radius, 32, 32]} />
+      <primitive object={mat} attach="material" />
     </mesh>
   )
 }
@@ -120,18 +91,64 @@ export default function CatalogPage() {
     maxTemp: "",
   })
 
+  const planets = useMemo<ExoplanetData[]>(
+    () =>
+      (exoplanets as RawExo[]).slice(0, 50).map((p) => {
+        const { mass } = parseMass(p.pl_masse ?? null)
+        return {
+          name: p.name,
+          id: (p as any).id ?? p.name,
+          x: p.x,
+          y: p.y,
+          z: p.z,
+          pl_masse: mass,
+          pl_rade: p.pl_rade,
+          st_teff: p.st_teff,
+          st_rad: p.st_rad,
+          st_mass: p.st_mass,
+          pl_orbsmax: p.pl_orbsmax,
+          pl_orbper: p.pl_orbper,
+          pl_eqt: p.pl_eqt,
+          isPlanet: p.isPlanet ?? null,
+        }
+      }),
+    [],
+  )
+
   const filteredPlanets = useMemo(() => {
-    return (exoplanets as CatalogPlanet[]).filter((planet) => {
+    return planets.filter((planet) => {
       if (searchTerm && !planet.name.toLowerCase().includes(searchTerm.toLowerCase())) return false
-      if (filters.minMass && planet.mass < Number(filters.minMass)) return false
-      if (filters.maxMass && planet.mass > Number(filters.maxMass)) return false
-      if (filters.minRadius && planet.radius < Number(filters.minRadius)) return false
-      if (filters.maxRadius && planet.radius > Number(filters.maxRadius)) return false
-      if (filters.minTemp && planet.temperature < Number(filters.minTemp)) return false
-      if (filters.maxTemp && planet.temperature > Number(filters.maxTemp)) return false
+
+      if (filters.minMass) {
+        const min = Number(filters.minMass)
+        if (!Number.isFinite(min) || planet.pl_masse == null || planet.pl_masse < min) return false
+      }
+      if (filters.maxMass) {
+        const max = Number(filters.maxMass)
+        if (!Number.isFinite(max) || planet.pl_masse == null || planet.pl_masse > max) return false
+      }
+
+      if (filters.minRadius) {
+        const min = Number(filters.minRadius)
+        if (!Number.isFinite(min) || planet.pl_rade == null || planet.pl_rade < min) return false
+      }
+      if (filters.maxRadius) {
+        const max = Number(filters.maxRadius)
+        if (!Number.isFinite(max) || planet.pl_rade == null || planet.pl_rade > max) return false
+      }
+
+      if (filters.minTemp) {
+        const min = Number(filters.minTemp)
+        if (!Number.isFinite(min) || planet.pl_eqt == null || planet.pl_eqt < min) return false
+      }
+      if (filters.maxTemp) {
+        const max = Number(filters.maxTemp)
+        if (!Number.isFinite(max) || planet.pl_eqt == null || planet.pl_eqt > max) return false
+      }
+
       return true
     })
-  }, [searchTerm, filters])
+  }, [planets, searchTerm, filters])
 
   const isEducational = mode === "educational"
 
@@ -237,41 +254,34 @@ export default function CatalogPage() {
           </Card>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredPlanets.map((planet) => (
+            {planets
+                    .filter((exo) => exo.pl_masse != null)
+                    .map((exo) => (
               <Card
-                key={planet.id}
+                key={exo.id}
                 className="p-6 hover:border-nebula-purple transition-all hover:scale-105 cursor-pointer bg-card/80 backdrop-blur-sm border-2 border-nebula-purple/20"
               >
                 <div className="space-y-4">
                   {/* 🔭 trocamos o gradiente por um mini-canvas 3D */}
                   <div className="w-full aspect-square rounded-full overflow-hidden bg-black/30 mx-auto">
-                    <MiniPlanetPreview planet={planet as CatalogPlanet} />
+                    <MiniPlanetPreview planet={exo} />
                   </div>
 
                   <div className="text-center">
-                    <h3 className="font-bold text-lg mb-1 text-white">{planet.name}</h3>
-                    <p className="text-sm text-white/70 mb-3">{planet.type}</p>
+                    <h3 className="font-bold text-lg mb-1 text-white">{exo.name}</h3>
 
                     <div className="space-y-1 text-xs">
                       <div className="flex justify-between">
                         <span className="text-white/60">{isEducational ? "Massa:" : "Mass:"}</span>
-                        <span className="font-medium text-white">{planet.mass} M⊕</span>
+                        <span className="font-medium text-white">{exo.pl_masse} Earths</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/60">{isEducational ? "Tamanho:" : "Radius:"}</span>
-                        <span className="font-medium text-white">{planet.radius} R⊕</span>
+                        <span className="font-medium text-white">{exo.pl_rade} x Earth</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/60">{isEducational ? "Temperatura:" : "Temp:"}</span>
-                        <span className="font-medium text-white">{planet.temperature} K</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/60">{isEducational ? "Distância:" : "Distance:"}</span>
-                        <span className="font-medium text-white">{planet.distance} a.l.</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-white/60">{isEducational ? "Descoberto:" : "Discovered:"}</span>
-                        <span className="font-medium text-white">{planet.discoveryYear}</span>
+                        <span className="font-medium text-white">{exo.pl_eqt} K</span>
                       </div>
                     </div>
                   </div>

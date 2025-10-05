@@ -2,30 +2,16 @@
 
 import { useMemo, useRef, useEffect, useState } from "react"
 import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber"
-import { OrbitControls, Stars, Html } from "@react-three/drei"
+import { OrbitControls, Html } from "@react-three/drei"
 import * as THREE from "three"
-import { exoplanets } from "@/lib/exo"
+import { exoplanets, RawExo } from "@/lib/exo"
 import { planetFragment, planetVertex } from "@/shaders/PlanetBase.glsl"
 import { computeTeq } from "@/utils/equivalentTempUtils"
 import { retrieveUniforms } from "@/constants/uniforms"
 import { X } from "lucide-react"
-
-type RawExo = {
-  name: string
-  id: string
-  x: number
-  y: number
-  z: number
-  pl_masse?: number | string | null
-  pl_rade: number | null;
-  st_teff: number | null; 
-  st_rad: number | null; 
-  st_mass: number | null;
-  pl_orbsmax: number | null; 
-  pl_orbper: number | null; 
-  pl_eqt: number | null;
-  isPlanet?: number | null;
-}
+import { Sun } from "./sun"
+import { Earth } from "./earth"
+import { parseMass } from "@/utils/parseMass"
 
 export type ExoplanetData = {
   name: string
@@ -34,9 +20,7 @@ export type ExoplanetData = {
   y: number
   z: number
   /** Mass in Earth masses (M⊕) normalized from pl_masse */
-  mass: number | null
-  /** Texto para exibir (ex.: "2.1", "< 0.8", "—") */
-  massLabel: string
+  pl_masse: number | null
   pl_rade: number | null;
   st_teff: number | null; 
   st_rad: number | null; 
@@ -61,96 +45,7 @@ export type Planet = {
   isPlanet: number | null;
 }
 
-function parseMass(value: number | string | null | undefined): { mass: number | null; label: string } {
-  if (value == null) return { mass: null, label: "—" }
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? { mass: value, label: value.toString() } : { mass: null, label: "—" }
-  }
-  // string: pode vir como "< 3.5", "≤1.2", "1.8", etc.
-  const trimmed = value.trim().replace(",", ".")
-  const m = trimmed.match(/^([<≤]\s*)?(\d+(\.\d+)?)/)
-  if (!m) return { mass: null, label: value }
-  const upper = Boolean(m[1])
-  const num = Number.parseFloat(m[2])
-  return {
-    mass: Number.isFinite(num) ? num : null, // usamos o valor numérico para o raio
-    label: upper ? `< ${num}` : `${num}`,
-  }
-}
-export function Sun({ onFocus }: { onFocus?: (pos: [number, number, number]) => void }) {
-  const meshRef = useRef<THREE.Mesh>(null)
-  const texture = useLoader(THREE.TextureLoader, "/images/sun.jpg")
-
-  useFrame(() => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += 0.001 * 1
-    }
-  })
-
-  return (
-    <mesh ref={meshRef} onClick={() => onFocus?.([0, 0, 0])}>
-      <sphereGeometry args={[2, 32, 32]} />
-      <meshStandardMaterial emissive="#FFF88F" emissiveMap={texture} emissiveIntensity={1.9} />
-      <Html distanceFactor={10} position={[0, 2.5, 0]}>
-        <div className="text-white text-sm font-medium whitespace-nowrap bg-black/70 px-3 py-1.5 rounded-lg border border-yellow-500/30">
-          Sol (Sun)
-        </div>
-      </Html>
-    </mesh>
-  )
-}
-
 const EARTH_POS: [number, number, number] = [8, 0, 0]
-
-function Earth({ onFocus }: { onFocus?: (pos: [number, number, number]) => void }) {
-  const R_EARTH_SCENE = 0.5 // raio visual de referência para 1 M⊕
-  const earthRef = useRef<THREE.Mesh>(null)
-  const cloudsRef = useRef<THREE.Mesh>(null)
-
-  const [dayMap, cloudsMap] = useLoader(THREE.TextureLoader, [
-    "/images/earth_daymap.jpg",
-    "/images/earth_atmosphere.jpg",
-  ])
-
-  // Rotação automática da Terra
-  useFrame((state, delta) => {
-    if (earthRef.current) {
-      earthRef.current.rotation.y += delta * 0.05 // Rotação lenta
-    }
-    if (cloudsRef.current) {
-      cloudsRef.current.rotation.y += delta * 0.06 // Nuvens giram um pouco mais rápido
-    }
-  })
-
-  return (
-    <group position={EARTH_POS} onClick={() => onFocus?.(EARTH_POS)}>
-      {/* Esfera principal da Terra */}
-      <mesh ref={earthRef}>
-        <sphereGeometry args={[R_EARTH_SCENE, 64, 64]} />
-        <meshStandardMaterial map={dayMap} />
-      </mesh>
-
-      {/* Camada de nuvens/atmosfera */}
-      <mesh ref={cloudsRef}>
-        <sphereGeometry args={[R_EARTH_SCENE + 0.01, 64, 64]} />
-        <meshStandardMaterial
-          map={cloudsMap}
-          transparent={true}
-          opacity={0.4}
-          depthWrite={false}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-
-      {/* Label HTML */}
-      <Html distanceFactor={10} position={[0, R_EARTH_SCENE + 0.5, 0]}>
-        <div className="text-white text-sm font-medium whitespace-nowrap bg-black/70 px-3 py-1.5 rounded-lg border border-blue-500/30">
-          Terra (Earth) — 1 M⊕
-        </div>
-      </Html>
-    </group>
-  )
-}
 
 /** Converte massa (M⊕) em raio visual. Aproximação: R ∝ M^(1/3) com clamps para visualização. */
 export function massToRadius(mass?: number | null): number {
@@ -246,7 +141,7 @@ function Exoplanet({
   if (!planet) return null
 
   const [px, py, pz] = toScenePosDeterministic(planet.x, planet.y, planet.z, planet.id)
-  const radius = massToRadius(planet.mass)
+  const radius = massToRadius(planet.pl_masse)
 
   const mesh = useRef<THREE.Mesh>(null);
   const Teq = computeTeq(planet);
@@ -304,15 +199,14 @@ function Scene({
   const planets = useMemo<ExoplanetData[]>(
     () =>
       (exoplanets as RawExo[]).map((p) => {
-        const { mass, label } = parseMass(p.pl_masse ?? null)
+        const { mass } = parseMass(p.pl_masse ?? null)
         return {
           name: p.name,
           id: (p as any).id ?? p.name,
           x: p.x,
           y: p.y,
           z: p.z,
-          mass,
-          massLabel: label,
+          pl_masse: mass,
           pl_rade: p.pl_rade,
           st_teff: p.st_teff,
           st_rad: p.st_rad,
@@ -464,11 +358,11 @@ function Scene({
       {/* <Stars radius={300} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */}
 
       {/* Sol + halo */}
-      <Sun onFocus={(pos) => animateTo(pos, 2)} />
+      <Sun />
 
-      <Earth onFocus={(pos) => animateTo(pos, 0.5)} />
+      <Earth onFocus={(pos) => animateTo(pos, 0.5)} earthPosition={EARTH_POS} />
       {planets
-        .filter((exo) => exo.mass != null)
+        .filter((exo) => exo.pl_masse != null)
         .map((exo) => (
           <Exoplanet
             key={exo.id}
@@ -479,7 +373,7 @@ function Scene({
                 const cam = controls.object
                 const V = (cam as any).up.constructor
                 const forward = cam.getWorldDirection(new V())
-                const r = massToRadius(exo.mass)
+                const r = massToRadius(exo.pl_masse)
                 const desiredDist = Math.max(2.0, Math.min(3.5, r * 6))
                 const dir = forward.clone().multiplyScalar(-desiredDist)
 

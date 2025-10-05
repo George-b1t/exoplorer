@@ -1,3 +1,20 @@
+export type RawExo = {
+  name: string
+  id: string
+  x: number
+  y: number
+  z: number
+  pl_masse?: number | string | null
+  pl_rade: number | null;
+  st_teff: number | null; 
+  st_rad: number | null; 
+  st_mass: number | null;
+  pl_orbsmax: number | null; 
+  pl_orbper: number | null; 
+  pl_eqt: number | null;
+  isPlanet?: number | null;
+}
+
 export const exoplanets = [
     {
         "name": "Kepler-334 d",

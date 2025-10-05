@@ -1,8 +1,8 @@
 "use client"
 
 import { useMemo, useRef, useEffect, useState } from "react"
-import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { OrbitControls, Stars, Html, useCursor } from "@react-three/drei"
+import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber"
+import { OrbitControls, Stars, Html } from "@react-three/drei"
 import * as THREE from "three"
 import { exoplanets } from "@/lib/exo"
 import { Button } from "@/components/ui/button"
@@ -64,52 +64,21 @@ function parseMass(value: number | string | null | undefined): { mass: number | 
     label: upper ? `< ${num}` : `${num}`,
   }
 }
+export function Sun({ onFocus }: { onFocus?: (pos: [number, number, number]) => void }) {
+  const meshRef = useRef<THREE.Mesh>(null)
+  const texture = useLoader(THREE.TextureLoader, "/images/sun.jpg")
 
-function Sun({ onFocus }: { onFocus?: (pos: [number, number, number]) => void }) {
-  const mesh = useRef<THREE.Mesh>(null)
-
-  // Sol no centro; a "luz" direcional do shader pode ficar arbitrária
-  const lightDir = useMemo(() => new THREE.Vector3(1, 0.2, 0.1).normalize(), [])
-
-  // Usa o mesmo pipeline do exoplaneta, mas com cor fixa amarela
-  const uniforms = useMemo(() => {
-    const u = retrieveUniforms(6000) // aprox. Teff solar (apenas pra manter compatibilidade de uniforms)
-    if (u.uLightDir?.value) (u.uLightDir.value as THREE.Vector3).copy(lightDir)
-
-    // tenta sobrescrever a cor base, independente do nome que seu shader expõe
-    const base = new THREE.Color("#ffce5d")
-    if ((u as any).uBaseColor) ((u as any).uBaseColor.value as THREE.Color).copy(base)
-    if ((u as any).uTint) ((u as any).uTint.value as THREE.Color).copy(base)
-    if ((u as any).uAlbedoColor) ((u as any).uAlbedoColor.value as THREE.Color).copy(base)
-
-    return u
-  }, [lightDir])
-
-  const mat = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        uniforms,
-        vertexShader: planetVertex,
-        fragmentShader: planetFragment,
-      }),
-    [uniforms],
-  )
-
-  useFrame((_, dt) => {
-    (mat.uniforms.uTime.value as number) += dt
-    if (mesh.current) mesh.current.rotation.y += dt * 0.3
+  useFrame(() => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += 0.001 * 1
+    }
   })
 
   return (
-    <mesh
-      ref={mesh}
-      position={[0, 0, 0]}
-      onClick={() => onFocus?.([0, 0, 0])}
-    >
-      {/* raio visual do Sol no seu scene graph atual */}
-      <sphereGeometry args={[2, 64, 64]} />
-      <primitive object={mat} attach="material" />
-      <Html distanceFactor={10} position={[0, 2.6, 0]}>
+    <mesh ref={meshRef} onClick={() => onFocus?.([0, 0, 0])}>
+      <sphereGeometry args={[2, 32, 32]} />
+      <meshStandardMaterial emissive="#FFF88F" emissiveMap={texture} emissiveIntensity={1.9} />
+      <Html distanceFactor={10} position={[0, 2.5, 0]}>
         <div className="text-white text-sm font-medium whitespace-nowrap bg-black/70 px-3 py-1.5 rounded-lg border border-yellow-500/30">
           Sol (Sun)
         </div>
@@ -121,54 +90,52 @@ function Sun({ onFocus }: { onFocus?: (pos: [number, number, number]) => void })
 const EARTH_POS: [number, number, number] = [8, 0, 0]
 
 function Earth({ onFocus }: { onFocus?: (pos: [number, number, number]) => void }) {
-  const mesh = useRef<THREE.Mesh>(null)
-  const R_EARTH_SCENE = 0.5
+  const R_EARTH_SCENE = 0.5 // raio visual de referência para 1 M⊕
+  const earthRef = useRef<THREE.Mesh>(null)
+  const cloudsRef = useRef<THREE.Mesh>(null)
 
-  // direção da "luz" vinda do Sol (origem) em relação à Terra
-  const lightDir = useMemo(() => new THREE.Vector3(-EARTH_POS[0], -EARTH_POS[1], -EARTH_POS[2]).normalize(), [])
+  const [dayMap, cloudsMap] = useLoader(THREE.TextureLoader, [
+    "/images/earth_daymap.jpg",
+    "/images/earth_atmosphere.jpg",
+  ])
 
-  // usa o mesmo pipeline + cor fixa azul
-  const uniforms = useMemo(() => {
-    const u = retrieveUniforms(288) // ~Teq/temperatura "visual"; só pra manter o contrato de uniforms
-    if (u.uLightDir?.value) (u.uLightDir.value as THREE.Vector3).copy(lightDir)
-
-    const base = new THREE.Color("#4A90E2")
-    if ((u as any).uBaseColor) ((u as any).uBaseColor.value as THREE.Color).copy(base)
-    if ((u as any).uTint) ((u as any).uTint.value as THREE.Color).copy(base)
-    if ((u as any).uAlbedoColor) ((u as any).uAlbedoColor.value as THREE.Color).copy(base)
-
-    return u
-  }, [lightDir])
-
-  const mat = useMemo(
-    () =>
-      new THREE.ShaderMaterial({
-        uniforms,
-        vertexShader: planetVertex,
-        fragmentShader: planetFragment,
-      }),
-    [uniforms],
-  )
-
-  useFrame((_, dt) => {
-    (mat.uniforms.uTime.value as number) += dt
-    if (mesh.current) mesh.current.rotation.y += dt * 0.6
+  // Rotação automática da Terra
+  useFrame((state, delta) => {
+    if (earthRef.current) {
+      earthRef.current.rotation.y += delta * 0.05 // Rotação lenta
+    }
+    if (cloudsRef.current) {
+      cloudsRef.current.rotation.y += delta * 0.06 // Nuvens giram um pouco mais rápido
+    }
   })
 
   return (
-    <mesh
-      ref={mesh}
-      position={EARTH_POS}
-      onClick={() => onFocus?.(EARTH_POS)}
-    >
-      <sphereGeometry args={[R_EARTH_SCENE, 64, 64]} />
-      <primitive object={mat} attach="material" />
+    <group position={EARTH_POS} onClick={() => onFocus?.(EARTH_POS)}>
+      {/* Esfera principal da Terra */}
+      <mesh ref={earthRef}>
+        <sphereGeometry args={[R_EARTH_SCENE, 64, 64]} />
+        <meshStandardMaterial map={dayMap} />
+      </mesh>
+
+      {/* Camada de nuvens/atmosfera */}
+      <mesh ref={cloudsRef}>
+        <sphereGeometry args={[R_EARTH_SCENE + 0.01, 64, 64]} />
+        <meshStandardMaterial
+          map={cloudsMap}
+          transparent={true}
+          opacity={0.4}
+          depthWrite={false}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+
+      {/* Label HTML */}
       <Html distanceFactor={10} position={[0, R_EARTH_SCENE + 0.5, 0]}>
         <div className="text-white text-sm font-medium whitespace-nowrap bg-black/70 px-3 py-1.5 rounded-lg border border-blue-500/30">
           Terra (Earth) — 1 M⊕
         </div>
       </Html>
-    </mesh>
+    </group>
   )
 }
 

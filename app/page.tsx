@@ -105,36 +105,27 @@ export default function HomePage() {
                 exoplanets.
               </p>
             </div>
-
-            
               
-                <div className="grid md:grid-cols-2 gap-8 items-center">
-                  <div className="space-y-6">
-                    <div className="p-6 rounded-xl bg-gradient-to-br from-nebula-purple/20 to-nebula-purple/5 border border-nebula-purple/30 backdrop-blur-sm">
-                      <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                        <Sparkles className="w-5 h-5 text-nebula-purple" />
-                        Interactive Learning
-                      </h3>
-                      <p className="text-white/70 leading-relaxed">
-                        Explore colorful visualizations, fun facts, and simplified explanations that make exoplanet
-                        science accessible to everyone.
-                      </p>
-                    </div>
-                    <div className="p-6 rounded-xl bg-gradient-to-br from-cosmic-cyan/20 to-cosmic-cyan/5 border border-cosmic-cyan/30 backdrop-blur-sm">
-                      <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
-                        <Globe className="w-5 h-5 text-cosmic-cyan" />
-                        Visual Discovery
-                      </h3>
-                      <p className="text-white/70 leading-relaxed">
-                        See planets come to life with 3D models, atmospheric layers, and comparative size charts that
-                        help you understand their unique characteristics.
-                      </p>
-                    </div>
+                <div className="w-full flex gap-2 items-center">
+                  <div className="h-40 w-full p-6 rounded-xl bg-gradient-to-br from-nebula-purple/20 to-nebula-purple/5 border border-nebula-purple/30 backdrop-blur-sm">
+                    <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-nebula-purple" />
+                      Interactive Learning
+                    </h3>
+                    <p className="text-white/70 leading-relaxed">
+                      Explore colorful visualizations, fun facts, and simplified explanations that make exoplanet
+                      science accessible to everyone.
+                    </p>
                   </div>
-                  <div className="relative h-64 md:h-96 rounded-2xl overflow-hidden border-2 border-nebula-purple/30 bg-gradient-to-br from-nebula-purple/10 to-cosmic-cyan/10 backdrop-blur-sm flex items-center justify-center">
-                    <Suspense fallback={<div className="text-white">Loading 3D Universe...</div>}>
-                      <Galaxy />
-                    </Suspense>
+                  <div className="h-40 w-full p-6 rounded-xl bg-gradient-to-br from-cosmic-cyan/20 to-cosmic-cyan/5 border border-cosmic-cyan/30 backdrop-blur-sm">
+                    <h3 className="text-xl font-bold text-white mb-3 flex items-center gap-2">
+                      <Globe className="w-5 h-5 text-cosmic-cyan" />
+                      Visual Discovery
+                    </h3>
+                    <p className="text-white/70 leading-relaxed">
+                      See planets come to life with 3D models, atmospheric layers, and comparative size charts that
+                      help you understand their unique characteristics.
+                    </p>
                   </div>
                 </div>
               </div>

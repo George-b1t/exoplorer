@@ -19,7 +19,7 @@ export function Sun() {
       <meshStandardMaterial emissive="#FFF88F" emissiveMap={texture} emissiveIntensity={1.9} />
       <Html distanceFactor={10} position={[0, 2.5, 0]}>
         <div className="text-white text-sm font-medium whitespace-nowrap bg-black/70 px-3 py-1.5 rounded-lg border border-yellow-500/30">
-          Sol (Sun)
+        Sun (Sun)
         </div>
       </Html>
     </mesh>

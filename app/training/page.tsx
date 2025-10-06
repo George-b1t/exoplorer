@@ -268,7 +268,7 @@ export default function TrainingPage() {
                 {planets.length > PLANETS_PER_PAGE && (
                   <div className="flex items-center justify-between mb-4 text-sm text-white/60">
                     <span>
-                      Mostrando {startIndex + 1}-{Math.min(endIndex, planets.length)} of {planets.length} planets
+                      Showing {startIndex + 1}-{Math.min(endIndex, planets.length)} of {planets.length} planets
                     </span>
                     <div className="flex items-center gap-2">
                       <Button

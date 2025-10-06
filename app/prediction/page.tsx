@@ -101,6 +101,7 @@ export default function SearchPage() {
 
       // Add sessionMode
       params.append("sessionMode", sessionModeMap[dataSource])
+      params.append("sessionId", localStorage.getItem("sessionId") || "")
 
       // Add hyperparameters if they have values
       if (hyperparameters.maxDepth) {

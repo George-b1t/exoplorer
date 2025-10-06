@@ -23,7 +23,7 @@ export function ModeSwitcherDialog() {
           size="sm"
           className="text-xs border-2 border-nebula-purple/30 hover:border-nebula-purple hover:bg-nebula-purple/10 text-white bg-transparent"
         >
-          {mode === "educational" ? "Modo Educacional ✓" : mode === "technical" ? "Modo Técnico ✓" : "Selecionar Modo"}
+          {mode === "educational" ? "Educational Mode ✓" : mode === "technical" ? "Technical Mode ✓" : "Select Mode"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md bg-deep-space/95 backdrop-blur-xl border-2 border-nebula-purple/30 text-white">

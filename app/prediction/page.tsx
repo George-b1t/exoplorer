@@ -251,7 +251,7 @@ export default function SearchPage() {
         <main className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold mb-4 text-white">Search by Parameters</h1>
+              <h1 className="text-4xl font-bold mb-4 text-white">Exoplanet Prediction</h1>
               <p className="text-white/80 text-lg">
                 {isEducational
                   ? "Enter the characteristics of the planet you envision"

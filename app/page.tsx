@@ -1,5 +1,6 @@
 "use client"
 
+import { Galaxy } from "@/components/galaxy"
 import { Header } from "@/components/header"
 import { SpaceBackground } from "@/components/space-background"
 import { Button } from "@/components/ui/button"
@@ -80,7 +81,7 @@ export default function HomePage() {
                 size="lg"
                 variant="outline"
                 className="text-lg px-8 py-6 border-2 border-white/30 hover:border-white text-white hover:bg-white/10 bg-transparent"
-                onClick={() => router.push("/search")}
+                onClick={() => router.push("/prediction")}
               >
                 <Brain className="w-5 h-5 mr-2" />
                 Try AI Prediction Tool
@@ -131,10 +132,7 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="relative h-64 md:h-96 rounded-2xl overflow-hidden border-2 border-nebula-purple/30 bg-gradient-to-br from-nebula-purple/10 to-cosmic-cyan/10 backdrop-blur-sm flex items-center justify-center">
-                    <div className="text-center space-y-4">
-                      <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-nebula-purple to-cosmic-cyan animate-pulse" />
-                      <p className="text-white/60 text-sm">Interactive Planet Visualization</p>
-                    </div>
+                      <Galaxy />
                   </div>
                 </div>
             
@@ -171,7 +169,7 @@ export default function HomePage() {
 
               <div
                 className="p-8 rounded-2xl bg-gradient-to-br from-cosmic-cyan/20 to-cosmic-cyan/5 border-2 border-cosmic-cyan/30 backdrop-blur-sm hover:border-cosmic-cyan/50 hover:scale-105 transition-all cursor-pointer group"
-                onClick={() => router.push("/search")}
+                onClick={() => router.push("/prediction")}
               >
                 <div className="w-16 h-16 rounded-full bg-cosmic-cyan/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Brain className="w-8 h-8 text-cosmic-cyan" />
@@ -369,7 +367,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   className="text-xl px-12 py-8 bg-gradient-to-r from-nebula-purple to-cosmic-cyan hover:from-nebula-purple/80 hover:to-cosmic-cyan/80 text-white border-0 shadow-2xl shadow-nebula-purple/50"
-                  onClick={() => router.push("/search")}
+                  onClick={() => router.push("/prediction")}
                 >
                   <Rocket className="w-6 h-6 mr-3" />
                   Start Exploring Now
@@ -394,7 +392,7 @@ export default function HomePage() {
                 <h4 className="text-white font-bold mb-4">Explore</h4>
                 <ul className="space-y-2 text-white/60 text-sm">
                   <li>
-                    <a href="/search" className="hover:text-white transition-colors">
+                    <a href="/prediction" className="hover:text-white transition-colors">
                       AI Prediction
                     </a>
                   </li>

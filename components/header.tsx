@@ -22,10 +22,10 @@ export function Header() {
 
             <nav className="flex items-center gap-6">
               <Link
-                href="/search"
+                href="/prediction"
                 className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
               >
-                Search
+                Prediction
               </Link>
               <Link
                 href="/catalog"

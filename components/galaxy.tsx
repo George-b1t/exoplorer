@@ -1,18 +1,15 @@
 "use client"
 
-import { useMemo, useRef, useEffect, useState } from "react"
-import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber"
-import { OrbitControls, Html } from "@react-three/drei"
-import * as THREE from "three"
 import { exoplanets, RawExo } from "@/lib/exo"
-import { planetFragment, planetVertex } from "@/shaders/PlanetBase.glsl"
-import { computeTeq } from "@/utils/equivalentTempUtils"
-import { retrieveUniforms } from "@/constants/uniforms"
-import { X } from "lucide-react"
-import { Sun } from "./sun"
-import { Earth } from "./earth"
 import { parseMass } from "@/utils/parseMass"
+import { OrbitControls } from "@react-three/drei"
+import { Canvas, useFrame, useThree } from "@react-three/fiber"
+import { X } from "lucide-react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import * as THREE from "three"
+import { Earth } from "./earth"
 import { Exoplanet } from "./exoplanet"
+import { Sun } from "./sun"
 
 export type ExoplanetData = {
   name: string
@@ -313,7 +310,7 @@ function Scene({
       {/* <Stars radius={300} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */}
 
       {/* Sol + halo */}
-      <Sun />
+      <Sun onFocus={(pos) => animateTo([0,0,0], 0.5)} />
 
       <Earth onFocus={(pos) => animateTo(pos, 0.5)} earthPosition={EARTH_POS} />
       {planets

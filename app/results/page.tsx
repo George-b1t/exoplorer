@@ -1,16 +1,16 @@
 "use client"
 
+import { Exoplanet } from "@/components/exoplanet"
+import { ExoplanetData } from "@/components/galaxy"
 import { Header } from "@/components/header"
 import { SpaceBackground } from "@/components/space-background"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Canvas } from "@react-three/fiber"
 import { ArrowLeft, CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
-import { Exoplanet } from "@/components/exoplanet"
-import { ExoplanetData } from "@/components/galaxy"
-import { Canvas } from "@react-three/fiber"
 
 interface SimilarPlanet {
   name: string
@@ -81,7 +81,7 @@ export default function ResultsPage() {
 
       if (!resultData || !paramsData) {
         console.error("[v0] No prediction data found in localStorage")
-        router.push("/search")
+        router.push("/prediction")
         return
       }
 
@@ -95,7 +95,7 @@ export default function ResultsPage() {
       setPredictionParams(params)
     } catch (error) {
       console.error("[v0] Error loading prediction data:", error)
-      router.push("/search")
+      router.push("/prediction")
     } finally {
       setIsLoading(false)
     }
@@ -147,7 +147,7 @@ export default function ResultsPage() {
         <Header />
 
         <main className="container mx-auto px-4 py-12">
-          <Link href="/search">
+          <Link href="/prediction">
             <Button variant="ghost" className="mb-6 text-white hover:text-white">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back

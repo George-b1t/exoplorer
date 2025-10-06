@@ -31,7 +31,9 @@ interface PlanetData {
   stellarTeff: string
   stellarLogg: string
   stellarRadius: string
+  isPlanet: string // "true" ou "false"
 }
+
 
 const PLANETS_PER_PAGE = 10
 
@@ -52,6 +54,7 @@ export default function TrainingPage() {
       stellarTeff: "",
       stellarLogg: "",
       stellarRadius: "",
+      isPlanet: "",
     },
   ])
 
@@ -100,6 +103,7 @@ export default function TrainingPage() {
           stellarTeff: values[headers.indexOf("STELLAR_TEFF_K")] || "",
           stellarLogg: values[headers.indexOf("STELLAR_LOGG_CMS2")] || "",
           stellarRadius: values[headers.indexOf("STELLAR_RADIUS_RSUN")] || "",
+          isPlanet: values[headers.indexOf("IS_PLANET")] || "",
         }
 
         importedPlanets.push(planet)
@@ -128,7 +132,8 @@ export default function TrainingPage() {
         stellarTeff: "",
         stellarLogg: "",
         stellarRadius: "",
-      },
+        isPlanet: "",
+      }
     ])
     // Navigate to last page if needed
     const newTotalPages = Math.ceil((planets.length + 1) / PLANETS_PER_PAGE)
@@ -170,11 +175,11 @@ export default function TrainingPage() {
         <main className="container mx-auto px-4 py-12">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold mb-4 text-white">Feed AI Model</h1>
+              <h1 className="text-4xl font-bold mb-4 text-white">Train AI Model</h1>
               <p className="text-white/80 text-lg">
                 {isEducational
-                  ? "Configure the planet data and adjust the parameters to train the model."
-                  : "Configure planetary data and hyperparameters for model training"}
+                  ? "Upload your data to train the AI model and generate predictions based on your input."
+                  : "Upload your data to train the AI model and generate predictions based on your input."}
               </p>
             </div>
 
@@ -258,6 +263,11 @@ export default function TrainingPage() {
                               <div className="font-mono text-sm text-cosmic-cyan mb-1">STELLAR_RADIUS_RSUN</div>
                               <div className="text-sm text-white/70">Stellar Radius in Solar Radii</div>
                             </div>
+                            <div className="p-3 rounded-lg bg-deep-space/50 border border-cosmic-cyan/20">
+                              <div className="font-mono text-sm text-cosmic-cyan mb-1">IS_PLANET</div>
+                              <div className="text-sm text-white/70">Boolean flag (true/false)</div>
+                            </div>
+
                           </div>
                         </div>
                       </DialogContent>
@@ -439,6 +449,21 @@ export default function TrainingPage() {
                             className="bg-space-black/50 border-white/10 text-white text-sm"
                           />
                         </div>
+
+                        <div>
+                          <Label className="text-white/80 text-xs mb-1 block">
+                            {isEducational ? "Is Planet?" : "Is Planet"}
+                          </Label>
+                          <select
+                            value={planet.isPlanet}
+                            onChange={(e) => updatePlanet(planet.id, "isPlanet", e.target.value)}
+                            className="bg-space-black/50 border-white/10 text-white text-sm rounded-md w-full py-2 px-3"
+                          >
+                            <option value="true">True</option>
+                            <option value="false">False</option>
+                          </select>
+                        </div>
+
                       </div>
                     </Card>
                   ))}

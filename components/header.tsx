@@ -34,10 +34,10 @@ export function Header() {
                 Catalog
               </Link>
               <Link
-                href="/galaxy"
+                href="/universe"
                 className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
               >
-                Galaxy 3D
+                Universe 3D
               </Link>
               <Link
                 href="/training"

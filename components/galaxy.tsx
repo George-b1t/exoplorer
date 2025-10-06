@@ -1,16 +1,12 @@
 "use client"
 
-import { exoplanets, RawExo } from "@/lib/exo"
 import { parseMass } from "@/utils/parseMass"
 import { OrbitControls } from "@react-three/drei"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
-import { useMemo, useRef, useEffect, useState } from "react"
-import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber"
-import { OrbitControls } from "@react-three/drei"
-import * as THREE from "three"
-import { exoplanets, RawExo } from "@/lib/exo"
-import { X } from "lucide-react"
+import { exoplanets, type RawExo } from "@/lib/exo"
+import { X, ChevronDown, ChevronUp } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import * as THREE from "three"
 import { Earth } from "./earth"
 import { Exoplanet } from "./exoplanet"
@@ -24,28 +20,28 @@ export type ExoplanetData = {
   z: number
   /** Mass in Earth masses (M⊕) normalized from pl_masse */
   pl_masse: number | null
-  pl_rade: number | null;
-  st_teff: number | null; 
-  st_rad: number | null; 
-  st_mass: number | null;
-  pl_orbsmax: number | null; 
-  pl_orbper: number | null; 
-  pl_eqt: number | null;
-  isPlanet: number | null;
+  pl_rade: number | null
+  st_teff: number | null
+  st_rad: number | null
+  st_mass: number | null
+  pl_orbsmax: number | null
+  pl_orbper: number | null
+  pl_eqt: number | null
+  isPlanet: number | null
 }
 
 export type Planet = {
   objectid: string
   pl_name: string
   pl_massj: number | null
-  pl_radj: number | null;
-  st_teff: number | null; 
-  st_rad: number | null; 
-  st_mass: number | null;
-  pl_orbsmax: number | null; 
-  pl_orbper: number | null; 
-  pl_eqt: number | null;
-  isPlanet: number | null;
+  pl_radj: number | null
+  st_teff: number | null
+  st_rad: number | null
+  st_mass: number | null
+  pl_orbsmax: number | null
+  pl_orbper: number | null
+  pl_eqt: number | null
+  isPlanet: number | null
 }
 
 const EARTH_POS: [number, number, number] = [8, 0, 0]
@@ -140,19 +136,23 @@ function Scene({
   onUserInteraction,
   showCone1 = true,
   showCone2 = true,
+  initialPlanetName,
+  fictionalPlanet,
 }: {
   onSelectPlanet?: (p: Planet) => void
   onHoverPlanet?: (info: { name?: string; x?: number; y?: number; visible: boolean }) => void
   onUserInteraction?: () => void
   showCone1?: boolean
   showCone2?: boolean
+  initialPlanetName?: string | null
+  fictionalPlanet?: { x: number; y: number; z: number; name?: string } | null
 }) {
-  const { gl } = useThree();
+  const { gl } = useThree()
 
   useEffect(() => {
-    gl.outputColorSpace = THREE.SRGBColorSpace;
-    gl.toneMapping = THREE.ACESFilmicToneMapping;
-  }, [gl]);
+    gl.outputColorSpace = THREE.SRGBColorSpace
+    gl.toneMapping = THREE.ACESFilmicToneMapping
+  }, [gl])
 
   const planets = useMemo<ExoplanetData[]>(
     () =>
@@ -177,6 +177,29 @@ function Scene({
       }),
     [],
   )
+
+  const allPlanets = useMemo<ExoplanetData[]>(() => {
+    if (!fictionalPlanet) return planets
+
+    const fictionalData: ExoplanetData = {
+      name: fictionalPlanet.name || "Fictional Planet",
+      id: "fictional-planet",
+      x: fictionalPlanet.x,
+      y: fictionalPlanet.y,
+      z: fictionalPlanet.z,
+      pl_masse: 1.0, // Default Earth mass for fictional planet
+      pl_rade: null,
+      st_teff: null,
+      st_rad: null,
+      st_mass: null,
+      pl_orbsmax: null,
+      pl_orbper: null,
+      pl_eqt: null,
+      isPlanet: null,
+    }
+
+    return [...planets, fictionalData]
+  }, [planets, fictionalPlanet])
 
   const animateTo = (pos: [number, number, number], approxRadius: number) => {
     const controls = controlsRef.current
@@ -212,15 +235,15 @@ function Scene({
     return {
       objectid: String(rec.objectid ?? ""),
       pl_name: rec.pl_name ?? rec.pl_name ?? "",
-      pl_massj: rec.pl_massj ?? null,     // M_J (Júpiter), ver nota abaixo
-      pl_radj: rec.pl_radj ?? null,       // R_⊕
+      pl_massj: rec.pl_massj ?? null, // M_J (Júpiter), ver nota abaixo
+      pl_radj: rec.pl_radj ?? null, // R_⊕
       st_teff: rec.st_teff ?? null,
       st_rad: rec.st_rad ?? null,
       st_mass: rec.st_mass ?? null,
       pl_orbsmax: rec.pl_orbsmax ?? null, // AU
-      pl_orbper: rec.pl_orbper ?? null,   // dias
-      pl_eqt: rec.pl_eqt ?? null,         // K
-      isPlanet: rec.isPlanet ?? null,     // pode vir da lista local
+      pl_orbper: rec.pl_orbper ?? null, // dias
+      pl_eqt: rec.pl_eqt ?? null, // K
+      isPlanet: rec.isPlanet ?? null, // pode vir da lista local
     }
   }
 
@@ -228,7 +251,7 @@ function Scene({
     const response = await fetch(`http://82.25.69.243:8000/api/v1/exoplanets/${planetName}`)
     const json = await response.json()
     // nessa rota eu tenho certeza q n vem isPlanet como posso pegar do objeto exoplanet?
-    const isPlanet = exoplanets.find((p) => p.name === planetName)?.isPlanet ?? null;
+    const isPlanet = exoplanets.find((p) => p.name === planetName)?.isPlanet ?? null
     const normalized = normalizePlanetPayload(json)
     normalized.isPlanet = isPlanet
     onSelectPlanet?.(normalized)
@@ -289,6 +312,39 @@ function Scene({
     return () => window.removeEventListener("keydown", onKey)
   }, [])
 
+  useEffect(() => {
+    if (initialPlanetName) {
+      const planet = allPlanets.find((p) => p.name.toLowerCase() === initialPlanetName.toLowerCase())
+      if (planet) {
+        const pos = toScenePosDeterministic(planet.x, planet.y, planet.z, planet.id)
+        setTimeout(() => {
+          animateTo(pos, massToRadius(planet.pl_masse))
+          handleSelectPlanet(planet.name)
+        }, 500)
+      }
+    } else if (fictionalPlanet) {
+      const pos = toScenePosDeterministic(fictionalPlanet.x, fictionalPlanet.y, fictionalPlanet.z, "fictional-planet")
+      setTimeout(() => {
+        animateTo(pos, massToRadius(1.0))
+        // Create a fictional planet info object
+        const fictionalInfo: Planet = {
+          objectid: "fictional-001",
+          pl_name: fictionalPlanet.name || "Fictional Planet",
+          pl_massj: null,
+          pl_radj: null,
+          st_teff: null,
+          st_rad: null,
+          st_mass: null,
+          pl_orbsmax: null,
+          pl_orbper: null,
+          pl_eqt: null,
+          isPlanet: null,
+        }
+        onSelectPlanet?.(fictionalInfo)
+      }, 500)
+    }
+  }, [initialPlanetName, fictionalPlanet])
+
   return (
     <>
       <ambientLight intensity={0.3} />
@@ -299,10 +355,10 @@ function Scene({
       {showCone2 && <CenterCone2 />}
 
       {/* Sol + halo */}
-      <Sun onFocus={(pos) => animateTo([0,0,0], 0.5)} />
+      <Sun onFocus={(pos) => animateTo([0, 0, 0], 0.5)} />
 
       <Earth onFocus={(pos) => animateTo(pos, 0.5)} earthPosition={EARTH_POS} />
-      {planets
+      {allPlanets
         .filter((exo) => exo.pl_masse != null)
         .map((exo) => (
           <Exoplanet
@@ -332,7 +388,9 @@ function Scene({
                   toTarget,
                 }
               }
-              handleSelectPlanet(exo.name)
+              if (exo.id !== "fictional-planet") {
+                handleSelectPlanet(exo.name)
+              }
             }}
           />
         ))}
@@ -437,6 +495,33 @@ export function Galaxy() {
   const [showCone1, setShowCone1] = useState(true)
   const [showCone2, setShowCone2] = useState(false)
 
+  const [isInfoOpen, setIsInfoOpen] = useState(false)
+
+  const searchParams = useSearchParams()
+  const planetName = searchParams.get("planet")
+  const xCoord = searchParams.get("x")
+  const yCoord = searchParams.get("y")
+  const zCoord = searchParams.get("z")
+  const fictionalName = searchParams.get("name")
+
+  const fictionalPlanet = useMemo(() => {
+    if (xCoord && yCoord && zCoord) {
+      const x = Number.parseFloat(xCoord)
+      const y = Number.parseFloat(yCoord)
+      const z = Number.parseFloat(zCoord)
+
+      if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
+        return {
+          x,
+          y,
+          z,
+          name: fictionalName || undefined,
+        }
+      }
+    }
+    return null
+  }, [xCoord, yCoord, zCoord, fictionalName])
+
   useEffect(() => {
     const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setSelected(null)
     window.addEventListener("keydown", onEsc)
@@ -456,7 +541,7 @@ export function Galaxy() {
 
   return (
     <div className="w-full h-full bg-transparent relative">
-      {/* Botões para ligar/desligar os “canhões de alcance” */}
+      {/* Botões para ligar/desligar os "canhões de alcance" */}
       <div className="absolute top-6 left-6 z-50 space-x-2">
         <button
           onClick={() => setShowCone1((s) => !s)}
@@ -485,6 +570,8 @@ export function Galaxy() {
             if (info.visible) setTooltip({ visible: true, text: info.name ?? "", x: info.x ?? 0, y: info.y ?? 0 })
             else setTooltip((t) => ({ ...t, visible: false }))
           }}
+          initialPlanetName={planetName}
+          fictionalPlanet={fictionalPlanet}
         />
       </Canvas>
 
@@ -554,10 +641,15 @@ export function Galaxy() {
               <div className="flex justify-between items-center py-2 border-b border-white/10">
                 <span className="text-white/60">Orbital Period:</span>
                 <span className="font-semibold text-nebula-pink">
-                  {selected.pl_orbper != null ? (() => {
-                    const n = typeof selected.pl_orbper === "number" ? selected.pl_orbper : parseFloat(String(selected.pl_orbper));
-                    return Number.isFinite(n) ? `${n.toFixed(1)} days` : "—";
-                  })() : "—"}
+                  {selected.pl_orbper != null
+                    ? (() => {
+                        const n =
+                          typeof selected.pl_orbper === "number"
+                            ? selected.pl_orbper
+                            : Number.parseFloat(String(selected.pl_orbper))
+                        return Number.isFinite(n) ? `${n.toFixed(1)} days` : "—"
+                      })()
+                    : "—"}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2">
@@ -567,12 +659,85 @@ export function Galaxy() {
                 </span>
               </div>
             </div>
-            <div className="mt-6 text-xs text-white/50 italic">
-              Exoplanet data provided by NASA Exoplanet Archive.
-            </div>
+            <div className="mt-6 text-xs text-white/50 italic">Exoplanet data provided by NASA Exoplanet Archive.</div>
           </div>
         </div>
       )}
+
+      <div className="fixed bottom-0 left-0 right-0 z-50">
+        <div className="max-w-4xl mx-auto px-4 pb-4">
+          <div className="bg-black/90 backdrop-blur-md rounded-t-xl border-2 border-b-0 border-nebula-purple/40 shadow-2xl overflow-hidden">
+            {/* Header - Always visible */}
+            <button
+              onClick={() => setIsInfoOpen(!isInfoOpen)}
+              className="w-full px-6 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 rounded-full bg-nebula-purple animate-pulse" />
+                <span className="text-white font-semibold text-sm">Data Sources & Methodology</span>
+              </div>
+              {isInfoOpen ? (
+                <ChevronDown className="text-white/70" size={20} />
+              ) : (
+                <ChevronUp className="text-white/70" size={20} />
+              )}
+            </button>
+
+            {/* Collapsible content */}
+            {isInfoOpen && (
+              <div className="px-6 pb-6 pt-2 space-y-4 text-sm text-white/80 leading-relaxed">
+                <div>
+                  <h3 className="text-nebula-purple font-semibold mb-2 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-nebula-purple" />
+                    Planetary Positions
+                  </h3>
+                  <p className="pl-3.5">
+                    All exoplanet positions displayed in this visualization are sourced directly from the{" "}
+                    <span className="text-nebula-pink font-medium">NASA Exoplanet Archive</span>. The spatial
+                    coordinates represent the actual celestial locations of confirmed exoplanets and candidates based on
+                    observational data.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-cosmic-cyan font-semibold mb-2 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cosmic-cyan" />
+                    Size Representation
+                  </h3>
+                  <p className="pl-3.5">
+                    Planet sizes are derived from NASA's mass and radius data. However, to ensure visual clarity and
+                    prevent extreme size discrepancies in the 3D space, the values have been{" "}
+                    <span className="text-cosmic-cyan font-medium">normalized using a cubic root scaling formula</span>{" "}
+                    (R ∝ M^(1/3)). This approach maintains relative proportions while keeping all objects visible and
+                    comparable within the scene.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-nebula-pink font-semibold mb-2 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-nebula-pink" />
+                    Color Calculation
+                  </h3>
+                  <p className="pl-3.5">
+                    The colors of each exoplanet are not arbitrary—they are{" "}
+                    <span className="text-nebula-pink font-medium">algorithmically generated</span> based on the
+                    planet's physical properties. Our custom formula takes into account factors such as equilibrium
+                    temperature, mass, radius, and stellar characteristics to produce scientifically-inspired color
+                    representations that reflect each planet's unique attributes.
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-white/10">
+                  <p className="text-xs text-white/50 italic">
+                    This visualization combines real astronomical data with computational techniques to create an
+                    immersive and educational experience of our cosmic neighborhood.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

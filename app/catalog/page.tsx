@@ -23,6 +23,7 @@ import { parseMass } from "@/utils/parseMass"
 import { Exoplanet } from "@/components/exoplanet"
 import { ExoplanetData } from "@/components/galaxy"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
 /** ---------- Mini preview com material shaderizado ---------- */
 function MiniPlanetPreview({ planet }: { planet: ExoplanetData }) {
@@ -44,6 +45,7 @@ function MiniPlanetPreview({ planet }: { planet: ExoplanetData }) {
 /** -------------------- Página -------------------- */
 export default function CatalogPage() {
   const { mode } = useMode()
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState({
     minMass: "",
@@ -290,6 +292,14 @@ export default function CatalogPage() {
                       </div>
                     </div>
                   </div>
+
+                  <Button
+                    variant="outline"
+                    className="w-full justify-center border-nebula-purple/30 text-white hover:text-white hover:bg-nebula-purple/20"
+                    onClick={() => router.push(`/universe?planet=${encodeURIComponent(exo.id)}`)}
+                  >
+                    Go to Universe
+                  </Button>
                 </div>
               </Card>
             ))}

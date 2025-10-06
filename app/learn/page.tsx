@@ -225,7 +225,7 @@ export default function LearnPage() {
                         <h4 className="text-lg font-bold text-white mb-3">Mission</h4>
                         <p className="text-white/80 leading-relaxed">
                           Launched in 2009, Kepler was the first space telescope designed specifically to
-                          search for Earth-like exoplanets in our galaxy. During its primary mission,
+                          search for Earth-like exoplanets in our universe. During its primary mission,
                           it continuously monitored over 150,000 stars in the constellation Cygnus.
                         </p>
                       </div>

@@ -172,9 +172,9 @@ export default function ResultsPage() {
 
                 <div>
                   <h1 className="text-3xl font-bold mb-2 text-white">
-                    {result ? "Pode ser um Exoplaneta!" : "Parâmetros Atípicos"}
+                    {result ? "It Could Be an Exoplanet!" : "Atypical Parameters"}
                   </h1>
-                  <p className="text-xl text-white/80">Confiança: {confidence}%</p>
+                  <p className="text-xl text-white/80">Similarity: {confidence}%</p>
                 </div>
 
                 <p className="text-lg leading-relaxed max-w-2xl mx-auto text-white/90">

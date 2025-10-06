@@ -71,7 +71,7 @@ export default function HomePage() {
               >
                 <Rocket className="w-5 h-5 mr-2" />
                 <Link
-                  href="/galaxy"
+                  href="/universe"
                   className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
                 >
                   Start Exploring Now
@@ -152,7 +152,7 @@ export default function HomePage() {
             <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-16">
               <div
                 className="p-8 rounded-2xl bg-gradient-to-br from-nebula-purple/20 to-nebula-purple/5 border-2 border-nebula-purple/30 backdrop-blur-sm hover:border-nebula-purple/50 hover:scale-105 transition-all cursor-pointer group"
-                onClick={() => router.push("/galaxy")}
+                onClick={() => router.push("/universe")}
               >
                 <div className="w-16 h-16 rounded-full bg-nebula-purple/20 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                   <Telescope className="w-8 h-8 text-nebula-purple" />
@@ -163,7 +163,7 @@ export default function HomePage() {
                   from their host stars in an immersive galactic experience.
                 </p>
                 <div className="flex items-center text-nebula-purple text-sm font-medium">
-                  Explore 3D Galaxy <ChevronDown className="w-4 h-4 ml-1 rotate-[-90deg]" />
+                  Explore 3D Universe <ChevronDown className="w-4 h-4 ml-1 rotate-[-90deg]" />
                 </div>
               </div>
 
@@ -402,8 +402,8 @@ export default function HomePage() {
                     </a>
                   </li>
                   <li>
-                    <a href="/galaxy" className="hover:text-white transition-colors">
-                      3D Galaxy
+                    <a href="/universe" className="hover:text-white transition-colors">
+                      3D Universe
                     </a>
                   </li>
                 </ul>

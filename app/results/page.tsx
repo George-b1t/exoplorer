@@ -287,6 +287,14 @@ export default function ResultsPage() {
                           )}
                         </div>
                       </div>
+
+                      <Button
+                        variant="outline"
+                        className="mt-4 pointer border-white text-white hover:bg-nebula-purple/10 w-full hover:border-nebula-purple hover:text-nebula-purple"
+                        onClick={() => router.push(`/universe?${planet.name}`)}
+                      >
+                        Go to Universe
+                      </Button>
                     </div>
                   </Card>
                 ))}

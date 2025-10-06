@@ -1,7 +1,7 @@
-import type React from "react"
-import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google"
-import "./globals.css"
 import { ModeProvider } from "@/contexts/mode-context"
+import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google"
+import type React from "react"
+import "./globals.css"
 
 const geistSans = Geist({
   subsets: ["latin"],
@@ -19,9 +19,9 @@ const spaceGrotesk = Space_Grotesk({
 })
 
 export const metadata = {
-  title: "Exoplorer - Explorador de Exoplanetas",
-  description: "Descubra exoplanetas através de parâmetros científicos",
-    generator: 'v0.app'
+  title: "Exoplorer - Exoplanet Explorer",
+  description: "Discover exoplanets through scientific parameters",
+  generator: 'v0.app'
 }
 
 export default function RootLayout({

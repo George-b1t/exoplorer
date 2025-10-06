@@ -17,7 +17,7 @@ export default function GalaxyPage() {
         {/* Title and description overlay */}
         <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 text-center pointer-events-none">
           <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-nebula-purple via-cosmic-cyan to-nebula-pink bg-clip-text text-transparent">
-            Explorador Galáctico
+            Galactic Explorer
           </h1>
         </div>
 
@@ -37,15 +37,15 @@ export default function GalaxyPage() {
         {/* Bottom info bar */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-6 bg-black/60 backdrop-blur-md px-6 py-3 rounded-full border border-white/10">
           <div className="flex items-center gap-2 text-white/70 text-xs">
-            <span>Arraste para rotacionar</span>
+            <span>Drag to rotate</span>
           </div>
           <div className="w-px h-4 bg-white/20" />
           <div className="flex items-center gap-2 text-white/70 text-xs">
-            <span>Scroll para zoom</span>
+            <span>Scroll to zoom</span>
           </div>
           <div className="w-px h-4 bg-white/20" />
           <div className="flex items-center gap-2 text-white/70 text-xs">
-            <span>Clique nos planetas</span>
+            <span>Click on the planets</span>
           </div>
         </div>
       </div>

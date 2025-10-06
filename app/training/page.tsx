@@ -2,13 +2,10 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
 import { Header } from "@/components/header"
 import { SpaceBackground } from "@/components/space-background"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Card } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -17,8 +14,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Brain, Plus, Trash2, Play, Upload, ChevronLeft, ChevronRight, Table } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { useMode } from "@/contexts/mode-context"
+import { ChevronLeft, ChevronRight, Plus, Table, Trash2, Upload } from "lucide-react"
+import { useRef, useState } from "react"
 
 interface PlanetData {
   id: string
@@ -79,7 +79,7 @@ export default function TrainingPage() {
       const lines = text.split("\n").filter((line) => line.trim())
 
       if (lines.length < 2) {
-        alert("CSV inválido: arquivo vazio ou sem dados")
+        alert("Invalid CSV: empty file or no data")
         return
       }
 
@@ -107,7 +107,7 @@ export default function TrainingPage() {
 
       setPlanets(importedPlanets)
       setCurrentPage(1)
-      alert(`${importedPlanets.length} planetas importados com sucesso!`)
+      alert(`${importedPlanets.length} planets imported successfully!`)
     }
 
     reader.readAsText(file)
@@ -156,7 +156,7 @@ export default function TrainingPage() {
     // Mock training process
     setTimeout(() => {
       setIsTraining(false)
-      alert("Modelo treinado com sucesso!")
+      alert("Model trained successfully!")
     }, 2000)
   }
 
@@ -170,11 +170,11 @@ export default function TrainingPage() {
         <main className="container mx-auto px-4 py-12">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold mb-4 text-white">Alimentar Modelo de IA</h1>
+              <h1 className="text-4xl font-bold mb-4 text-white">Feed AI Model</h1>
               <p className="text-white/80 text-lg">
                 {isEducational
-                  ? "Configure os dados dos planetas e ajuste os parâmetros para treinar o modelo"
-                  : "Configure os dados planetários e hiperparâmetros para treinamento do modelo"}
+                  ? "Configure the planet data and adjust the parameters to train the model."
+                  : "Configure planetary data and hyperparameters for model training"}
               </p>
             </div>
 
@@ -182,7 +182,7 @@ export default function TrainingPage() {
               {/* Planets Data Card */}
               <Card className="p-6 bg-card/80 backdrop-blur-sm border-2 border-nebula-purple/30 lg:col-span-3">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-white">Dados dos Planetas</h2>
+                  <h2 className="text-xl font-bold text-white">Planet Data</h2>
                   <div className="flex gap-2">
                     <input ref={fileInputRef} type="file" accept=".csv" onChange={handleCsvImport} className="hidden" />
                     <Button
@@ -192,7 +192,7 @@ export default function TrainingPage() {
                       className="border-cosmic-cyan/30 hover:border-cosmic-cyan text-white hover:bg-cosmic-cyan/10 bg-transparent"
                     >
                       <Upload className="w-4 h-4 mr-2" />
-                      Importar CSV
+                      Import CSV
                     </Button>
                     <Button
                       onClick={addPlanet}
@@ -201,7 +201,7 @@ export default function TrainingPage() {
                       className="border-nebula-purple/30 hover:border-nebula-purple text-white hover:bg-nebula-purple/10 bg-transparent"
                     >
                       <Plus className="w-4 h-4 mr-2" />
-                      Adicionar
+                      Add
                     </Button>
                     <Dialog>
                       <DialogTrigger asChild>
@@ -215,48 +215,48 @@ export default function TrainingPage() {
                       </DialogTrigger>
                       <DialogContent className="min-w-[80vw] bg-card/95 backdrop-blur-sm border-2 border-cosmic-cyan/30 text-white">
                         <DialogHeader>
-                          <DialogTitle className="text-2xl font-bold text-white">Formato CSV Esperado</DialogTitle>
+                          <DialogTitle className="text-2xl font-bold text-white">Expected CSV Format</DialogTitle>
                           <DialogDescription className="text-white/70">
-                            O arquivo CSV deve conter as seguintes colunas com os dados dos exoplanetas
+                            The CSV file must contain the following columns with exoplanet data
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 mt-4">
                           <div className="grid grid-cols-3 gap-3">
                             <div className="p-3 rounded-lg bg-deep-space/50 border border-cosmic-cyan/20">
                               <div className="font-mono text-sm text-cosmic-cyan mb-1">ORBITAL_PERIOD_DAYS</div>
-                              <div className="text-sm text-white/70">Período Orbital em dias</div>
+                              <div className="text-sm text-white/70">Orbital Period in Days</div>
                             </div>
                             <div className="p-3 rounded-lg bg-deep-space/50 border border-cosmic-cyan/20">
                               <div className="font-mono text-sm text-cosmic-cyan mb-1">TRANSIT_DURATION_HOURS</div>
-                              <div className="text-sm text-white/70">Duração do Trânsito em horas</div>
+                              <div className="text-sm text-white/70">Transit Duration in Hours</div>
                             </div>
                             <div className="p-3 rounded-lg bg-deep-space/50 border border-cosmic-cyan/20">
                               <div className="font-mono text-sm text-cosmic-cyan mb-1">TRANSIT_DEPTH_PPM</div>
-                              <div className="text-sm text-white/70">Profundidade do Trânsito em partes por milhão</div>
+                              <div className="text-sm text-white/70">Transit Depth in Parts Per Million</div>
                             </div>
                             <div className="p-3 rounded-lg bg-deep-space/50 border border-cosmic-cyan/20">
                               <div className="font-mono text-sm text-cosmic-cyan mb-1">PLANET_RADIUS_REARTH</div>
-                              <div className="text-sm text-white/70">Raio do Planeta em raios terrestres</div>
+                              <div className="text-sm text-white/70">Planet Radius in Earth Radii</div>
                             </div>
                             <div className="p-3 rounded-lg bg-deep-space/50 border border-cosmic-cyan/20">
                               <div className="font-mono text-sm text-cosmic-cyan mb-1">PLANET_INSOLATION_EFLUX</div>
-                              <div className="text-sm text-white/70">Fluxo de Insolação em fluxo terrestre</div>
+                              <div className="text-sm text-white/70">Insolation Flux in Earth Flux</div>
                             </div>
                             <div className="p-3 rounded-lg bg-deep-space/50 border border-cosmic-cyan/20">
                               <div className="font-mono text-sm text-cosmic-cyan mb-1">PLANET_EQ_TEMP_K</div>
-                              <div className="text-sm text-white/70">Temperatura de Equilíbrio em Kelvin</div>
+                              <div className="text-sm text-white/70">Equilibrium Temperature in Kelvin</div>
                             </div>
                             <div className="p-3 rounded-lg bg-deep-space/50 border border-cosmic-cyan/20">
                               <div className="font-mono text-sm text-cosmic-cyan mb-1">STELLAR_TEFF_K</div>
-                              <div className="text-sm text-white/70">Temperatura Efetiva Estelar em Kelvin</div>
+                              <div className="text-sm text-white/70">Stellar Effective Temperature in Kelvin</div>
                             </div>
                             <div className="p-3 rounded-lg bg-deep-space/50 border border-cosmic-cyan/20">
                               <div className="font-mono text-sm text-cosmic-cyan mb-1">STELLAR_LOGG_CMS2</div>
-                              <div className="text-sm text-white/70">Gravidade Superficial Estelar em log10(cm/s²)</div>
+                              <div className="text-sm text-white/70">Stellar Surface Gravity in log10(cm/s²)</div>
                             </div>
                             <div className="p-3 rounded-lg bg-deep-space/50 border border-cosmic-cyan/20">
                               <div className="font-mono text-sm text-cosmic-cyan mb-1">STELLAR_RADIUS_RSUN</div>
-                              <div className="text-sm text-white/70">Raio Estelar em raios solares</div>
+                              <div className="text-sm text-white/70">Stellar Radius in Solar Radii</div>
                             </div>
                           </div>
                         </div>
@@ -268,7 +268,7 @@ export default function TrainingPage() {
                 {planets.length > PLANETS_PER_PAGE && (
                   <div className="flex items-center justify-between mb-4 text-sm text-white/60">
                     <span>
-                      Mostrando {startIndex + 1}-{Math.min(endIndex, planets.length)} de {planets.length} planetas
+                      Mostrando {startIndex + 1}-{Math.min(endIndex, planets.length)} of {planets.length} planets
                     </span>
                     <div className="flex items-center gap-2">
                       <Button
@@ -281,7 +281,7 @@ export default function TrainingPage() {
                         <ChevronLeft className="w-4 h-4" />
                       </Button>
                       <span className="text-white">
-                        Página {currentPage} de {totalPages}
+                        Page {currentPage} of {totalPages}
                       </span>
                       <Button
                         onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
@@ -300,7 +300,7 @@ export default function TrainingPage() {
                   {currentPlanets.map((planet, index) => (
                     <Card key={planet.id} className="p-4 bg-deep-space/50 border border-nebula-purple/20">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-bold text-white">Planeta {startIndex + index + 1}</h3>
+                        <h3 className="font-bold text-white">Planet {startIndex + index + 1}</h3>
                         {planets.length > 1 && (
                           <Button
                             onClick={() => removePlanet(planet.id)}
@@ -316,7 +316,7 @@ export default function TrainingPage() {
                       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                         <div>
                           <Label className="text-white/80 text-xs mb-1 block">
-                            {isEducational ? "Período Orbital (dias)" : "Orbital Period [days]"}
+                            {isEducational ? "Orbital Period (dias)" : "Orbital Period [days]"}
                           </Label>
                           <Input
                             type="number"
@@ -330,7 +330,7 @@ export default function TrainingPage() {
 
                         <div>
                           <Label className="text-white/80 text-xs mb-1 block">
-                            {isEducational ? "Duração do Trânsito (hrs)" : "Transit Duration [hrs]"}
+                            {isEducational ? "Transit Duration (hrs)" : "Transit Duration [hrs]"}
                           </Label>
                           <Input
                             type="number"
@@ -344,7 +344,7 @@ export default function TrainingPage() {
 
                         <div>
                           <Label className="text-white/80 text-xs mb-1 block">
-                            {isEducational ? "Profundidade do Trânsito (ppm)" : "Transit Depth [ppm]"}
+                            {isEducational ? "Transit Depth (ppm)" : "Transit Depth [ppm]"}
                           </Label>
                           <Input
                             type="number"
@@ -358,7 +358,7 @@ export default function TrainingPage() {
 
                         <div>
                           <Label className="text-white/80 text-xs mb-1 block">
-                            {isEducational ? "Raio do Planeta (R⊕)" : "Planet Radius [R⊕]"}
+                            {isEducational ? "Planet Radius (R⊕)" : "Planet Radius [R⊕]"}
                           </Label>
                           <Input
                             type="number"
@@ -372,7 +372,7 @@ export default function TrainingPage() {
 
                         <div>
                           <Label className="text-white/80 text-xs mb-1 block">
-                            {isEducational ? "Fluxo de Insolação (F⊕)" : "Insolation Flux [F⊕]"}
+                            {isEducational ? "Insolation Flux (F⊕)" : "Insolation Flux [F⊕]"}
                           </Label>
                           <Input
                             type="number"
@@ -386,7 +386,7 @@ export default function TrainingPage() {
 
                         <div>
                           <Label className="text-white/80 text-xs mb-1 block">
-                            {isEducational ? "Temperatura de Equilíbrio (K)" : "Equilibrium Temp [K]"}
+                            {isEducational ? "Equilibrium Temp (K)" : "Equilibrium Temp [K]"}
                           </Label>
                           <Input
                             type="number"
@@ -400,7 +400,7 @@ export default function TrainingPage() {
 
                         <div>
                           <Label className="text-white/80 text-xs mb-1 block">
-                            {isEducational ? "Temp. Efetiva Estelar (K)" : "Stellar Teff [K]"}
+                            {isEducational ? "Effective Stellar Temperature (K)" : "Stellar Teff [K]"}
                           </Label>
                           <Input
                             type="number"
@@ -414,7 +414,7 @@ export default function TrainingPage() {
 
                         <div>
                           <Label className="text-white/80 text-xs mb-1 block">
-                            {isEducational ? "Gravidade Superficial Estelar" : "Stellar log(g) [cm/s²]"}
+                            {isEducational ? "Stellar Surface Gravity" : "Stellar log(g) [cm/s²]"}
                           </Label>
                           <Input
                             type="number"
@@ -428,7 +428,7 @@ export default function TrainingPage() {
 
                         <div>
                           <Label className="text-white/80 text-xs mb-1 block">
-                            {isEducational ? "Raio Estelar (R☉)" : "Stellar Radius [R☉]"}
+                            {isEducational ? "Stellar Radius (R☉)" : "Stellar Radius [R☉]"}
                           </Label>
                           <Input
                             type="number"

@@ -1,9 +1,5 @@
 "use client"
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useMode } from "@/contexts/mode-context"
 import { Header } from "@/components/header"
 import { SpaceBackground } from "@/components/space-background"
 import { Button } from "@/components/ui/button"
@@ -11,8 +7,12 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Slider } from "@/components/ui/slider"
-import { Search, ChevronDown, ChevronUp, Loader2 } from "lucide-react"
+import { useMode } from "@/contexts/mode-context"
 import { useToast } from "@/hooks/use-toast"
+import { ChevronDown, ChevronUp, Loader2, Search } from "lucide-react"
+import { useRouter } from "next/navigation"
+import type React from "react"
+import { useEffect, useState } from "react"
 
 // Valores padrão da Terra
 const EARTH_DEFAULTS = {
@@ -160,8 +160,8 @@ export default function SearchPage() {
       )
 
       toast({
-        title: "Análise concluída!",
-        description: "Os resultados foram salvos com sucesso.",
+        title: "Analysis completed!",
+        description: "The results have been successfully saved.",
       })
 
       // Redirect to results page
@@ -169,8 +169,8 @@ export default function SearchPage() {
     } catch (error) {
       console.error("[v0] Error calling prediction API:", error)
       toast({
-        title: "Erro na análise",
-        description: error instanceof Error ? error.message : "Ocorreu um erro ao processar sua solicitação.",
+        title: "Analysis error",
+        description: error instanceof Error ? error.message : "An error occurred while processing your request.",
         variant: "destructive",
       })
     } finally {
@@ -251,11 +251,11 @@ export default function SearchPage() {
         <main className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-12">
-              <h1 className="text-4xl font-bold mb-4 text-white">Buscar por Parâmetros</h1>
+              <h1 className="text-4xl font-bold mb-4 text-white">Search by Parameters</h1>
               <p className="text-white/80 text-lg">
                 {isEducational
-                  ? "Insira as características do planeta que você imagina"
-                  : "Insira os parâmetros físicos para análise"}
+                  ? "Enter the characteristics of the planet you envision"
+                  : "Enter the physical parameters for analysis"}
               </p>
             </div>
 
@@ -263,13 +263,13 @@ export default function SearchPage() {
               <form onSubmit={handleSubmit} className="space-y-8">
                 <div className="space-y-4">
                   <h2 className="text-xl font-semibold text-white border-b border-white/10 pb-2">
-                    Fonte de Dados para Predição
+                    Data Source for Prediction
                   </h2>
                   <div className="space-y-3">
                     <Label className="text-white text-base">
                       {isEducational
-                        ? "Escolha quais dados usar para fazer a predição:"
-                        : "Selecione a fonte de dados:"}
+                        ? "Choose which data to use for prediction:"
+                        : "Select the data source:"}
                     </Label>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <button
@@ -281,9 +281,9 @@ export default function SearchPage() {
                             : "border-white/20 bg-deep-space/30 text-white/70 hover:border-white/40"
                         }`}
                       >
-                        <div className="font-semibold mb-1">Dados da Plataforma</div>
+                        <div className="font-semibold mb-1">Platform Data</div>
                         {isEducational && (
-                          <div className="text-xs text-white/60">Usar dados já existentes no sistema</div>
+                          <div className="text-xs text-white/60">Use existing data in the system</div>
                         )}
                       </button>
                       <button
@@ -295,8 +295,8 @@ export default function SearchPage() {
                             : "border-white/20 bg-deep-space/30 text-white/70 hover:border-white/40"
                         }`}
                       >
-                        <div className="font-semibold mb-1">Meus Dados</div>
-                        {isEducational && <div className="text-xs text-white/60">Usar dados que você cadastrou</div>}
+                        <div className="font-semibold mb-1">My Data</div>
+                        {isEducational && <div className="text-xs text-white/60">Use the data you registered</div>}
                       </button>
                       <button
                         type="button"
@@ -307,9 +307,9 @@ export default function SearchPage() {
                             : "border-white/20 bg-deep-space/30 text-white/70 hover:border-white/40"
                         }`}
                       >
-                        <div className="font-semibold mb-1">Ambos</div>
+                        <div className="font-semibold mb-1">Both</div>
                         {isEducational && (
-                          <div className="text-xs text-white/60">Combinar todos os dados disponíveis</div>
+                          <div className="text-xs text-white/60">Combine all available data</div>
                         )}
                       </button>
                     </div>
@@ -319,54 +319,54 @@ export default function SearchPage() {
                 {/* Parâmetros Planetários */}
                 <div className="space-y-6">
                   <h2 className="text-xl font-semibold text-white border-b border-white/10 pb-2">
-                    Parâmetros Planetários
+                    Planet Parameters
                   </h2>
 
                   {renderField(
                     "orbitalPeriod",
-                    "Período Orbital",
-                    "dias",
-                    isEducational ? "A Terra leva 365 dias para completar uma órbita ao redor do Sol." : undefined,
+                    "Orbital Period",
+                    "days",
+                    isEducational ? "Earth takes 365 days to complete an orbit around the Sun." : undefined,
                   )}
 
                   {renderField(
                     "transitDuration",
-                    "Duração do Trânsito",
-                    "horas",
-                    isEducational ? "Tempo que o planeta leva para passar na frente de sua estrela." : undefined,
+                    "Transit Duration",
+                    "hours",
+                    isEducational ? "Time it takes for the planet to pass in front of its star." : undefined,
                   )}
 
                   {renderField(
                     "transitDepth",
-                    "Profundidade do Trânsito",
+                    "Transit Depth",
                     "ppm",
                     isEducational
-                      ? "Quanto a luz da estrela diminui quando o planeta passa na frente (em partes por milhão)."
+                      ? "When the light from the star decreases as the planet passes in front (in parts per million)."
                       : undefined,
                   )}
 
                   {renderField(
                     "planetRadius",
-                    "Raio do Planeta",
+                    "Planet Radius",
                     "R⊕",
-                    isEducational ? "O raio da Terra é 1.0. Júpiter tem um raio cerca de 11 vezes maior." : undefined,
+                    isEducational ? "Earth's radius is 1.0. JJupiter has a radius about 11 times larger." : undefined,
                   )}
 
                   {renderField(
                     "planetInsolation",
-                    "Fluxo de Insolação",
+                    "Insolation Flux",
                     "S⊕",
                     isEducational
-                      ? "Quantidade de energia que o planeta recebe de sua estrela, relativa à Terra."
+                      ? "Amount of energy received by the planet from its star, relative to Earth."
                       : undefined,
                   )}
 
                   {renderField(
                     "planetEqTemp",
-                    "Temperatura de Equilíbrio",
+                    "Equilibrium Temperature",
                     "K",
                     isEducational
-                      ? "A Terra tem temperatura de equilíbrio de 255K. A temperatura da superfície é maior devido ao efeito estufa."
+                      ? "Earth has an equilibrium temperature of 255K. Surface temperature is higher due to the greenhouse effect."
                       : undefined,
                   )}
                 </div>
@@ -374,32 +374,32 @@ export default function SearchPage() {
                 {/* Parâmetros Estelares */}
                 <div className="space-y-6">
                   <h2 className="text-xl font-semibold text-white border-b border-white/10 pb-2">
-                    Parâmetros Estelares
+                    Stellar Parameters
                   </h2>
 
                   {renderField(
                     "stellarTeff",
-                    "Temperatura Efetiva Estelar",
+                    "Stellar Effective Temperature",
                     "K",
                     isEducational
-                      ? "O Sol tem temperatura de 5778K. Estrelas mais quentes são azuis, mais frias são vermelhas."
+                      ? "The Sun has a temperature of 5778K. Hotter stars are blue, cooler ones are red."
                       : undefined,
                   )}
 
                   {renderField(
                     "stellarLogg",
-                    "Gravidade Superficial Estelar",
+                    "Stellar Surface Gravity",
                     "log₁₀(cm/s²)",
                     isEducational
-                      ? "O Sol tem log g = 4.44. Valores maiores indicam estrelas menores e mais densas."
+                      ? "The Sun has log g = 4.44. Higher values indicate smaller, denser stars."
                       : undefined,
                   )}
 
                   {renderField(
                     "stellarRadius",
-                    "Raio Estelar",
+                    "Stellar Radius",
                     "R☉",
-                    isEducational ? "O raio do Sol é 1.0. Gigantes vermelhas podem ter raios 100x maiores." : undefined,
+                    isEducational ? "The Sun has a radius of 1.0. Red giants can have radii 100x larger." : undefined,
                   )}
                 </div>
 
@@ -412,8 +412,8 @@ export default function SearchPage() {
                         className="flex items-center justify-between w-full text-left p-4 rounded-lg border-2 border-white/20 bg-deep-space/30 hover:border-white/40 transition-all"
                       >
                         <div>
-                          <h2 className="text-lg font-semibold text-white">Configurações Avançadas</h2>
-                          <p className="text-sm text-white/60">Ajuste os hiperparâmetros do modelo de predição</p>
+                          <h2 className="text-lg font-semibold text-white">Advanced Settings</h2>
+                          <p className="text-sm text-white/60">Adjust the hyperparameters of the prediction model</p>
                         </div>
                         {showAdvanced ? (
                           <ChevronUp className="w-5 h-5 text-white" />
@@ -426,7 +426,7 @@ export default function SearchPage() {
                         <div className="space-y-6 p-6 rounded-lg border-2 border-white/10 bg-deep-space/20">
                           <div className="space-y-2">
                             <Label htmlFor="maxDepth" className="text-white text-base">
-                              Profundidade Máxima (max_depth)
+                              Maximum Depth (max_depth)
                             </Label>
                             <Input
                               id="maxDepth"
@@ -439,14 +439,14 @@ export default function SearchPage() {
                               className="bg-deep-space/50 border-nebula-purple/30 text-white"
                             />
                             <p className="text-xs text-white/60 leading-relaxed">
-                              Define a profundidade máxima de cada árvore. Valores maiores capturam mais detalhes, mas
-                              podem causar overfitting.
+                              Controls the maximum depth of each tree. Higher values capture more detail but can lead to overfitting.
+                              
                             </p>
                           </div>
 
                           <div className="space-y-2">
                             <Label htmlFor="learningRate" className="text-white text-base">
-                              Taxa de Aprendizado (learning_rate)
+                              Learning Rate (learning_rate)
                             </Label>
                             <Input
                               id="learningRate"
@@ -459,14 +459,14 @@ export default function SearchPage() {
                               className="bg-deep-space/50 border-nebula-purple/30 text-white"
                             />
                             <p className="text-xs text-white/60 leading-relaxed">
-                              Controla quanto cada árvore contribui para a predição final. Valores menores (0.01-0.1)
-                              melhoram a generalização.
+                              Controls how much each tree contributes to the final prediction. Lower values (0.01-0.1)
+                              improve generalization.
                             </p>
                           </div>
 
                           <div className="space-y-2">
                             <Label htmlFor="nEstimators" className="text-white text-base">
-                              Número de Árvores (n_estimators)
+                              Number of Trees (n_estimators)
                             </Label>
                             <Input
                               id="nEstimators"
@@ -479,8 +479,8 @@ export default function SearchPage() {
                               className="bg-deep-space/50 border-nebula-purple/30 text-white"
                             />
                             <p className="text-xs text-white/60 leading-relaxed">
-                              Número de árvores no modelo. Mais árvores podem melhorar a precisão, mas aumentam o risco
-                              de overfitting.
+                              Number of trees in the model. More trees can improve accuracy but increase the risk
+                              of overfitting.
                             </p>
                           </div>
                         </div>
@@ -489,13 +489,13 @@ export default function SearchPage() {
                   ) : (
                     <div className="space-y-6">
                       <h2 className="text-xl font-semibold text-white border-b border-white/10 pb-2">
-                        Hiperparâmetros do Modelo
+                        Model Hyperparameters
                       </h2>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="maxDepth" className="text-white text-sm">
-                            Profundidade Máxima (max_depth)
+                            Maximum Depth (max_depth)
                           </Label>
                           <Input
                             id="maxDepth"
@@ -511,7 +511,7 @@ export default function SearchPage() {
 
                         <div className="space-y-2">
                           <Label htmlFor="learningRate" className="text-white text-sm">
-                            Taxa de Aprendizado (learning_rate)
+                            Learning Rate (learning_rate)
                           </Label>
                           <Input
                             id="learningRate"
@@ -527,7 +527,7 @@ export default function SearchPage() {
 
                         <div className="space-y-2">
                           <Label htmlFor="nEstimators" className="text-white text-sm">
-                            Número de Árvores (n_estimators)
+                            NNumber of Trees (n_estimators)
                           </Label>
                           <Input
                             id="nEstimators"
@@ -554,12 +554,12 @@ export default function SearchPage() {
                   {isLoading ? (
                     <>
                       <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Analisando...
+                      Analyzing...
                     </>
                   ) : (
                     <>
                       <Search className="w-5 h-5 mr-2" />
-                      Analisar Parâmetros
+                      Analyze Parameters
                     </>
                   )}
                 </Button>

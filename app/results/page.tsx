@@ -1,13 +1,13 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { SpaceBackground } from "@/components/space-background"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { CheckCircle2, XCircle, ArrowLeft } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { ArrowLeft, CheckCircle2, XCircle } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
 import { Exoplanet } from "@/components/exoplanet"
 import { ExoplanetData } from "@/components/galaxy"
 import { Canvas } from "@react-three/fiber"
@@ -106,7 +106,7 @@ export default function ResultsPage() {
       <div className="min-h-screen relative overflow-hidden">
         <SpaceBackground />
         <div className="relative z-10 flex items-center justify-center min-h-screen">
-          <div className="text-white text-xl">Carregando resultados...</div>
+          <div className="text-white text-xl">Loading results...</div>
         </div>
       </div>
     )
@@ -150,7 +150,7 @@ export default function ResultsPage() {
           <Link href="/search">
             <Button variant="ghost" className="mb-6 text-white hover:text-white">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar
+              Back
             </Button>
           </Link>
 
@@ -179,21 +179,21 @@ export default function ResultsPage() {
 
                 <p className="text-lg leading-relaxed max-w-2xl mx-auto text-white/90">
                   {result
-                    ? "Com base nos parâmetros fornecidos, o modelo identificou que este objeto tem características compatíveis com exoplanetas conhecidos."
-                    : "Os parâmetros fornecidos não correspondem aos padrões típicos de exoplanetas conhecidos. Isso pode indicar um objeto incomum ou parâmetros fora do esperado."}
+                    ? "Based on the parameters provided, the model identified that this object has characteristics compatible with known exoplanets.."
+                    : "The parameters provided do not match the typical patterns of known exoplanets. This may indicate an unusual object or parameters outside the expected range."}
                 </p>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4 pt-6">
                   {formData.orbitalPeriod && (
                     <div className="text-center">
                       <div className="text-2xl font-bold text-nebula-purple">{formData.orbitalPeriod}</div>
-                      <div className="text-sm text-white/70">Período Orbital (dias)</div>
+                      <div className="text-sm text-white/70">Orbital Period (days)</div>
                     </div>
                   )}
                   {formData.planetRadius && (
                     <div className="text-center">
                       <div className="text-2xl font-bold text-nebula-purple">{formData.planetRadius}</div>
-                      <div className="text-sm text-white/70">Raio (R⊕)</div>
+                      <div className="text-sm text-white/70">Radius (R⊕)</div>
                     </div>
                   )}
                   {formData.planetEqTemp && (
@@ -205,19 +205,19 @@ export default function ResultsPage() {
                   {formData.transitDuration && (
                     <div className="text-center">
                       <div className="text-2xl font-bold text-nebula-purple">{formData.transitDuration}</div>
-                      <div className="text-sm text-white/70">Duração Trânsito (h)</div>
+                      <div className="text-sm text-white/70">Transit Duration (h)</div>
                     </div>
                   )}
                   {formData.stellarTeff && (
                     <div className="text-center">
                       <div className="text-2xl font-bold text-nebula-purple">{formData.stellarTeff}</div>
-                      <div className="text-sm text-white/70">Temp. Estelar (K)</div>
+                      <div className="text-sm text-white/70">Stellar Temp. (K)</div>
                     </div>
                   )}
                   {formData.stellarRadius && (
                     <div className="text-center">
                       <div className="text-2xl font-bold text-nebula-purple">{formData.stellarRadius}</div>
-                      <div className="text-sm text-white/70">Raio Estelar (R☉)</div>
+                      <div className="text-sm text-white/70">Stellar Radius (R☉)</div>
                     </div>
                   )}
                 </div>
@@ -226,9 +226,9 @@ export default function ResultsPage() {
 
             {/* Similar Planets */}
             <div>
-              <h2 className="text-2xl font-bold mb-6 text-white">Exoplanetas Similares</h2>
+              <h2 className="text-2xl font-bold mb-6 text-white">Similar Exoplanets</h2>
               <p className="text-white/80 mb-6">
-                Estes são os exoplanetas mais similares com base nos parâmetros fornecidos
+                These are the most similar exoplanets based on the provided parameters
               </p>
 
               <div className="grid md:grid-cols-2 gap-6">
@@ -245,19 +245,19 @@ export default function ResultsPage() {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-lg mb-1 text-white">{planet.name}</h3>
                         <p className="text-sm text-white/70 mb-3">
-                          {planet.pl_status} • Similaridade: {100 - Math.round(planet.similarity * 100)}%
+                          {planet.pl_status} • Similarity: {100 - Math.round(planet.similarity * 100)}%
                         </p>
 
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           {planet.pl_orbper !== null && (
                             <div>
-                              <span className="text-white/60">Período:</span>{" "}
-                              <span className="font-medium text-white">{planet.pl_orbper.toFixed(2)} dias</span>
+                              <span className="text-white/60">Orbital Period:</span>{" "}
+                              <span className="font-medium text-white">{planet.pl_orbper.toFixed(2)} days</span>
                             </div>
                           )}
                           {planet.pl_rade !== null && (
                             <div>
-                              <span className="text-white/60">Raio:</span>{" "}
+                              <span className="text-white/60">Radius:</span>{" "}
                               <span className="font-medium text-white">{planet.pl_rade.toFixed(2)} R⊕</span>
                             </div>
                           )}
@@ -269,19 +269,19 @@ export default function ResultsPage() {
                           )}
                           {planet.pl_insol !== null && (
                             <div>
-                              <span className="text-white/60">Insolação:</span>{" "}
+                              <span className="text-white/60">Insolation:</span>{" "}
                               <span className="font-medium text-white">{planet.pl_insol.toFixed(2)} S⊕</span>
                             </div>
                           )}
                           {planet.st_teff !== null && (
                             <div>
-                              <span className="text-white/60">Temp. Estelar:</span>{" "}
+                              <span className="text-white/60">Stellar Temp.:</span>{" "}
                               <span className="font-medium text-white">{planet.st_teff.toFixed(0)} K</span>
                             </div>
                           )}
                           {planet.st_rad !== null && (
                             <div>
-                              <span className="text-white/60">Raio Estelar:</span>{" "}
+                              <span className="text-white/60">Stellar Radius:</span>{" "}
                               <span className="font-medium text-white">{planet.st_rad.toFixed(2)} R☉</span>
                             </div>
                           )}
@@ -294,7 +294,7 @@ export default function ResultsPage() {
 
               {similar.length === 0 && (
                 <Card className="p-8 bg-card/80 backdrop-blur-sm border-2 border-nebula-purple/20 text-center">
-                  <p className="text-white/70">Nenhum exoplaneta similar encontrado com os parâmetros fornecidos.</p>
+                  <p className="text-white/70">No similar exoplanets found with the provided parameters.</p>
                 </Card>
               )}
             </div>

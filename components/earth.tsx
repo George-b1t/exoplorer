@@ -51,7 +51,7 @@ export function Earth({ onFocus, earthPosition }: EarthProps) {
       {/* Label HTML */}
       <Html distanceFactor={10} position={[0, R_EARTH_SCENE + 0.5, 0]}>
         <div className="text-white text-sm font-medium whitespace-nowrap bg-black/70 px-3 py-1.5 rounded-lg border border-blue-500/30">
-          Terra (Earth) — 1 M⊕
+          Earth (Earth) — 1 M⊕
         </div>
       </Html>
     </group>

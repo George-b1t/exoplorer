@@ -1,6 +1,5 @@
 "use client"
 
-import { useMode } from "@/contexts/mode-context"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -10,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { useMode } from "@/contexts/mode-context"
 import { GraduationCap, Microscope } from "lucide-react"
 
 export function ModeSwitcherDialog() {
@@ -28,9 +28,9 @@ export function ModeSwitcherDialog() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-md bg-deep-space/95 backdrop-blur-xl border-2 border-nebula-purple/30 text-white">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-white">Escolha seu modo de visualização</DialogTitle>
+          <DialogTitle className="text-2xl text-white">Select your viewing mode</DialogTitle>
           <DialogDescription className="text-white/70">
-            Selecione como você prefere explorar os exoplanetas
+            Select how you prefer to explore exoplanets
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -45,10 +45,10 @@ export function ModeSwitcherDialog() {
             <div className="flex items-start gap-4">
               <GraduationCap className="w-8 h-8 text-cosmic-cyan flex-shrink-0" />
               <div>
-                <h3 className="font-bold text-lg mb-2 text-white">Modo Educacional</h3>
+                <h3 className="font-bold text-lg mb-2 text-white">Educational Mode</h3>
                 <p className="text-sm text-white/80">
-                  Explicações simplificadas, analogias com a Terra e descrições acessíveis para estudantes e
-                  entusiastas.
+                  Simplified explanations, analogies with Earth, and accessible descriptions for students and
+                  enthusiasts.
                 </p>
               </div>
             </div>
@@ -65,9 +65,9 @@ export function ModeSwitcherDialog() {
             <div className="flex items-start gap-4">
               <Microscope className="w-8 h-8 text-nebula-purple flex-shrink-0" />
               <div>
-                <h3 className="font-bold text-lg mb-2 text-white">Modo Técnico</h3>
+                <h3 className="font-bold text-lg mb-2 text-white">Technical Mode</h3>
                 <p className="text-sm text-white/80">
-                  Notação científica, unidades astronômicas e terminologia técnica para pesquisadores e especialistas.
+                  Scientific notation, astronomical units, and technical terminology for researchers and specialists.
                 </p>
               </div>
             </div>

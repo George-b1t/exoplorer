@@ -8,6 +8,9 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { CheckCircle2, XCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { Exoplanet } from "@/components/exoplanet"
+import { ExoplanetData } from "@/components/galaxy"
+import { Canvas } from "@react-three/fiber"
 
 interface SimilarPlanet {
   name: string
@@ -48,6 +51,21 @@ interface PredictionParams {
     stellarRadius: string
   }
   timestamp: string
+}
+
+export function MiniPlanetPreview({ planet }: { planet: ExoplanetData }) {
+  return (
+    <Canvas
+      className="w-full h-full"
+      dpr={[1, 1.75]}  
+      gl={{ antialias: true }}
+      camera={{ position: [0, 0, 2.2], fov: 35 }}
+    >
+      <ambientLight intensity={0.15} />
+      <directionalLight position={[1.5, 1.2, 1.8]} intensity={0.5} />
+      <Exoplanet planet={planet} />
+    </Canvas>
+  )
 }
 
 export default function ResultsPage() {
@@ -100,6 +118,23 @@ export default function ResultsPage() {
 
   const { result, similar } = predictionResult
   const { formData } = predictionParams
+
+  const mapSimilarToExoplanetData = (planet: SimilarPlanet): ExoplanetData => ({
+    name: planet.name,
+    pl_orbper: planet.pl_orbper,
+    pl_rade: planet.pl_rade,
+    pl_eqt: planet.pl_eqt,
+    st_teff: planet.st_teff,
+    st_rad: planet.st_rad,
+    pl_masse: 50, // estimativa grosseira
+    isPlanet: planet.pl_status === "Confirmed" ? 1 : 0,
+    pl_orbsmax: null,
+    id: "",
+    st_mass: null,
+    x: 0,
+    y: 0,
+    z: 0,
+  })
 
   const avgSimilarity = similar.length > 0 ? similar.reduce((acc, p) => acc + (1 - p.similarity), 0) / similar.length : 0
   const confidence = Math.round(avgSimilarity * 100)
@@ -202,8 +237,10 @@ export default function ResultsPage() {
                     key={`${planet.name}-${index}`}
                     className="p-6 hover:border-nebula-purple transition-colors bg-card/80 backdrop-blur-sm border-2 border-nebula-purple/20"
                   >
-                    <div className="flex items-start gap-4">
-                      <div className="w-20 h-20 rounded-full bg-gradient-to-br from-nebula-purple/40 to-cosmic-cyan/40 flex-shrink-0 planet-float" />
+                    <div className="flex flex-col items-start gap-4">
+                      <div className="w-full">
+                        <MiniPlanetPreview planet={mapSimilarToExoplanetData(planet)} />
+                      </div>
 
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-lg mb-1 text-white">{planet.name}</h3>

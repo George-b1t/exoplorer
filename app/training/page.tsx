@@ -19,6 +19,8 @@ import { Label } from "@/components/ui/label"
 import { useMode } from "@/contexts/mode-context"
 import { ChevronLeft, ChevronRight, Plus, Table, Trash2, Upload } from "lucide-react"
 import { useRef, useState } from "react"
+import { v4 as uuidv4 } from "uuid"
+
 
 interface PlanetData {
   id: string
@@ -77,46 +79,91 @@ export default function TrainingPage() {
     if (!file) return
 
     const reader = new FileReader()
-    reader.onload = (e) => {
-      const text = e.target?.result as string
-      const lines = text.split("\n").filter((line) => line.trim())
+    reader.onload = async (e) => {
+      try {
+        const text = e.target?.result as string
+        const lines = text.split("\n").filter((line) => line.trim())
 
-      if (lines.length < 2) {
-        alert("Invalid CSV: empty file or no data")
-        return
-      }
-
-      const headers = lines[0].split(",").map((h) => h.trim())
-      const importedPlanets: PlanetData[] = []
-
-      for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(",").map((v) => v.trim())
-
-        const planet: PlanetData = {
-          id: Date.now().toString() + i,
-          orbitalPeriod: values[headers.indexOf("ORBITAL_PERIOD_DAYS")] || "",
-          transitDuration: values[headers.indexOf("TRANSIT_DURATION_HOURS")] || "",
-          transitDepth: values[headers.indexOf("TRANSIT_DEPTH_PPM")] || "",
-          planetRadius: values[headers.indexOf("PLANET_RADIUS_REARTH")] || "",
-          insolationFlux: values[headers.indexOf("PLANET_INSOLATION_EFLUX")] || "",
-          eqTemp: values[headers.indexOf("PLANET_EQ_TEMP_K")] || "",
-          stellarTeff: values[headers.indexOf("STELLAR_TEFF_K")] || "",
-          stellarLogg: values[headers.indexOf("STELLAR_LOGG_CMS2")] || "",
-          stellarRadius: values[headers.indexOf("STELLAR_RADIUS_RSUN")] || "",
-          isPlanet: values[headers.indexOf("IS_PLANET")] || "",
+        if (lines.length < 2) {
+          alert("Invalid CSV: empty file or no data")
+          return
         }
 
-        importedPlanets.push(planet)
-      }
+        const headers = lines[0].split(",").map((h) => h.trim())
+        const idx = (name: string) => headers.indexOf(name)
+        
+        const toNum = (v: string | undefined) => (v && v.trim() !== "" ? Number(v) : 0)
+        const toIsPlanet = (v: string | undefined) => (String(v).toLowerCase() === "true" ? 1 : 0)
 
-      setPlanets(importedPlanets)
-      setCurrentPage(1)
-      alert(`${importedPlanets.length} planets imported successfully!`)
+        const importedPlanets: PlanetData[] = []
+        const payload: any[] = []
+
+        for (let i = 1; i < lines.length; i++) {
+          const values = lines[i].split(",").map((v) => v.trim())
+
+          const planet: PlanetData = {
+            id: Date.now().toString() + i,
+            orbitalPeriod: values[idx("ORBITAL_PERIOD_DAYS")] || "",
+            transitDuration: values[idx("TRANSIT_DURATION_HOURS")] || "",
+            transitDepth: values[idx("TRANSIT_DEPTH_PPM")] || "",
+            planetRadius: values[idx("PLANET_RADIUS_REARTH")] || "",
+            insolationFlux: values[idx("PLANET_INSOLATION_EFLUX")] || "",
+            eqTemp: values[idx("PLANET_EQ_TEMP_K")] || "",
+            stellarTeff: values[idx("STELLAR_TEFF_K")] || "",
+            stellarLogg: values[idx("STELLAR_LOGG_CMS2")] || "",
+            stellarRadius: values[idx("STELLAR_RADIUS_RSUN")] || "",
+            isPlanet: values[idx("IS_PLANET")] || "",
+          }
+          importedPlanets.push(planet)
+
+          // monta o objeto no schema da API
+          payload.push({
+            ORBITAL_PERIOD_DAYS: toNum(planet.orbitalPeriod),
+            TRANSIT_DURATION_HOURS: toNum(planet.transitDuration),
+            TRANSIT_DEPTH_PPM: toNum(planet.transitDepth),
+            PLANET_RADIUS_REARTH: toNum(planet.planetRadius),
+            PLANET_INSOLATION_EFLUX: toNum(planet.insolationFlux),
+            PLANET_EQ_TEMP_K: toNum(planet.eqTemp),
+            STELLAR_TEFF_K: toNum(planet.stellarTeff),
+            STELLAR_LOGG_CMS2: toNum(planet.stellarLogg),
+            STELLAR_RADIUS_RSUN: toNum(planet.stellarRadius),
+            STATUS: toIsPlanet(planet.isPlanet),                        // ajuste se necessário
+            isPlanet: toIsPlanet(planet.isPlanet),
+          })
+        }
+
+        // Atualiza UI
+        setPlanets(importedPlanets)
+        setCurrentPage(1)
+
+        // Garante sessionId e dispara o POST /train
+        const sessionId = getOrCreateSessionId()
+        if (!sessionId) throw new Error("Não foi possível obter/criar o sessionId.")
+
+        const res = await fetch(`http://82.25.69.243:8000/api/v1/train?sessionId=${sessionId}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+
+        if (!res.ok) {
+          const text = await res.text()
+          throw new Error(`Erro no /train: ${res.status} ${text}`)
+        }
+
+        alert(`${importedPlanets.length} planets imported and sent to training successfully!`)
+      } catch (err) {
+        console.error("[train] CSV import/train error:", err)
+        alert(err instanceof Error ? err.message : "Failed to import/train.")
+      } finally {
+        // limpa o input para permitir reimportar o mesmo arquivo se quiser
+        event.target.value = ""
+      }
     }
 
     reader.readAsText(file)
-    event.target.value = ""
   }
+
 
   const addPlanet = () => {
     setPlanets([
@@ -156,14 +203,18 @@ export default function TrainingPage() {
     setPlanets(planets.map((p) => (p.id === id ? { ...p, [field]: value } : p)))
   }
 
-  const handleTrain = () => {
-    setIsTraining(true)
-    // Mock training process
-    setTimeout(() => {
-      setIsTraining(false)
-      alert("Model trained successfully!")
-    }, 2000)
+
+  function getOrCreateSessionId() {
+    if (typeof window === "undefined") return null
+    let id = localStorage.getItem("sessionId")
+    if (!id) {
+      id = uuidv4()
+      localStorage.setItem("sessionId", id)
+    }
+    return id
   }
+
+
 
   return (
     <div className="min-h-screen relative overflow-hidden">

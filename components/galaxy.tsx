@@ -4,6 +4,11 @@ import { exoplanets, RawExo } from "@/lib/exo"
 import { parseMass } from "@/utils/parseMass"
 import { OrbitControls } from "@react-three/drei"
 import { Canvas, useFrame, useThree } from "@react-three/fiber"
+import { useMemo, useRef, useEffect, useState } from "react"
+import { Canvas, useFrame, useThree, useLoader } from "@react-three/fiber"
+import { OrbitControls } from "@react-three/drei"
+import * as THREE from "three"
+import { exoplanets, RawExo } from "@/lib/exo"
 import { X } from "lucide-react"
 import { useEffect, useMemo, useRef, useState } from "react"
 import * as THREE from "three"
@@ -131,13 +136,16 @@ export function toScenePosDeterministic(
 
 function Scene({
   onSelectPlanet,
-  onUserInteraction, // << NOVO
-  autoRotate,
+  onHoverPlanet,
+  onUserInteraction,
+  showCone1 = true,
+  showCone2 = true,
 }: {
   onSelectPlanet?: (p: Planet) => void
   onHoverPlanet?: (info: { name?: string; x?: number; y?: number; visible: boolean }) => void
-  onUserInteraction?: () => void // << NOVO
-  autoRotate: boolean
+  onUserInteraction?: () => void
+  showCone1?: boolean
+  showCone2?: boolean
 }) {
   const { gl } = useThree();
 
@@ -145,8 +153,6 @@ function Scene({
     gl.outputColorSpace = THREE.SRGBColorSpace;
     gl.toneMapping = THREE.ACESFilmicToneMapping;
   }, [gl]);
-
-  const [isFetching, setIsFetching] = useState(false)
 
   const planets = useMemo<ExoplanetData[]>(
     () =>
@@ -228,26 +234,6 @@ function Scene({
     onSelectPlanet?.(normalized)
   }
 
-  // Escuta eventos do OrbitControls para detectar interação do usuário
-  useEffect(() => {
-    const controls = controlsRef.current
-    if (!controls) return
-
-    const handleStart = () => onUserInteraction?.()
-    const handleChange = () => onUserInteraction?.() // enquanto o usuário arrasta/roda
-    const handleEnd = () => onUserInteraction?.()
-
-    controls.addEventListener?.('start', handleStart)
-    controls.addEventListener?.('change', handleChange)
-    controls.addEventListener?.('end', handleEnd)
-
-    return () => {
-      controls.removeEventListener?.('start', handleStart)
-      controls.removeEventListener?.('change', handleChange)
-      controls.removeEventListener?.('end', handleEnd)
-    }
-  }, [onUserInteraction])
-
   // Ref de animação para transição suave de câmera e target
   const animRef = useRef<{
     active: boolean
@@ -307,7 +293,10 @@ function Scene({
     <>
       <ambientLight intensity={0.3} />
       <pointLight position={[0, 0, 0]} intensity={1} color="#FDB813" />
-      {/* <Stars radius={300} depth={50} count={5000} factor={4} saturation={0} fade speed={1} /> */}
+
+      {/* CONES no centro do mapa (controlados pelos botões) */}
+      {showCone1 && <CenterCone />}
+      {showCone2 && <CenterCone2 />}
 
       {/* Sol + halo */}
       <Sun onFocus={(pos) => animateTo([0,0,0], 0.5)} />
@@ -357,44 +346,145 @@ function Scene({
         minDistance={2}
         maxDistance={800}
         target={EARTH_POS}
-        autoRotate={autoRotate}
-        autoRotateSpeed={1}
       />
     </>
+  )
+}
+
+function CenterCone({
+  radius = 20,
+  height = 130,
+  radialSegments = 16,
+  opacity = 0.05,
+}: {
+  radius?: number
+  height?: number
+  radialSegments?: number
+  opacity?: number
+}) {
+  return (
+    <mesh position={[-5, -90, -50]} renderOrder={1} raycast={null as any} rotation={[0.55, 0, 0]}>
+      <coneGeometry args={[radius, height, radialSegments]} />
+      <meshBasicMaterial
+        transparent
+        opacity={opacity}
+        color="#8A2BE2"
+        wireframe={false}
+        depthTest={false}
+        depthWrite={false}
+        side={THREE.DoubleSide}
+      />
+      {/* linhas de contorno para dar leitura */}
+      <mesh position={[0, 0, 0]} renderOrder={2} raycast={null as any}>
+        <coneGeometry args={[radius, height, Math.max(16, Math.floor(radialSegments / 2))]} />
+        <meshBasicMaterial
+          transparent
+          opacity={Math.min(1, opacity + 0.15)}
+          color="#B388FF"
+          wireframe
+          depthTest={false}
+          depthWrite={false}
+        />
+      </mesh>
+    </mesh>
+  )
+}
+
+function CenterCone2({
+  radius = 36,
+  height = 140,
+  radialSegments = 16,
+  opacity = 0.05,
+}: {
+  radius?: number
+  height?: number
+  radialSegments?: number
+  opacity?: number
+}) {
+  return (
+    <mesh position={[20, -70, 60]} renderOrder={1} raycast={null as any} rotation={[-0.9, 0, 0.17]}>
+      <coneGeometry args={[radius, height, radialSegments]} />
+      <meshBasicMaterial
+        transparent
+        opacity={opacity}
+        color="#8A2BE2"
+        wireframe={false}
+        depthTest={false}
+        depthWrite={false}
+        side={THREE.DoubleSide}
+      />
+      {/* linhas de contorno para dar leitura */}
+      <mesh position={[0, 0, 0]} renderOrder={2} raycast={null as any}>
+        <coneGeometry args={[radius, height, Math.max(16, Math.floor(radialSegments / 2))]} />
+        <meshBasicMaterial
+          transparent
+          opacity={Math.min(1, opacity + 0.15)}
+          color="#e9ff88"
+          wireframe
+          depthTest={false}
+          depthWrite={false}
+        />
+      </mesh>
+    </mesh>
   )
 }
 
 export function Galaxy() {
   const [selected, setSelected] = useState<Planet | null>(null)
   const [tooltip, setTooltip] = useState({ visible: false, text: "", x: 0, y: 0 })
-  const [autoRotate, setAutoRotate] = useState(true) // ligado por padrão
-  const pauseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleUserInteraction = () => {
-    // pausa a autorotação por 5s e reinicia o timer se o usuário continuar mexendo
-    setAutoRotate(false)
-    if (pauseTimerRef.current) clearTimeout(pauseTimerRef.current)
-    pauseTimerRef.current = setTimeout(() => setAutoRotate(true), 5000)
-  }
+  // NOVO: flags para mostrar/ocultar cones
+  const [showCone1, setShowCone1] = useState(true)
+  const [showCone2, setShowCone2] = useState(false)
 
   useEffect(() => {
     const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setSelected(null)
     window.addEventListener("keydown", onEsc)
-    return () => window.removeEventListener("keydown", onEsc)
+
+    // atalhos para os cones: C e V
+    const onKeyToggle = (e: KeyboardEvent) => {
+      if (e.key === "c" || e.key === "C") setShowCone1((s) => !s)
+      if (e.key === "v" || e.key === "V") setShowCone2((s) => !s)
+    }
+    window.addEventListener("keydown", onKeyToggle)
+
+    return () => {
+      window.removeEventListener("keydown", onEsc)
+      window.removeEventListener("keydown", onKeyToggle)
+    }
   }, [])
 
   return (
     <div className="w-full h-full bg-transparent relative">
-      <Canvas camera={{ position: [0, 10, 20], fov: 60, far: 2000 }}
-              onPointerDown={handleUserInteraction} /* segurança extra para clique/touch no canvas */>
+      {/* Botões para ligar/desligar os “canhões de alcance” */}
+      <div className="absolute top-6 left-6 z-50 space-x-2">
+        <button
+          onClick={() => setShowCone1((s) => !s)}
+          className={`px-3 py-2 rounded-lg border shadow-sm text-sm transition
+            ${showCone1 ? "bg-nebula-purple/20 border-nebula-purple text-white" : "bg-black/50 border-white/20 text-white/80 hover:bg-white/10"}`}
+          title="Alternar Cone 1 (atalho: C)"
+        >
+          {showCone1 ? "Hide Cone 1" : "Show Cone 1"}
+        </button>
+        <button
+          onClick={() => setShowCone2((s) => !s)}
+          className={`px-3 py-2 rounded-lg border shadow-sm text-sm transition
+            ${showCone2 ? "bg-cosmic-cyan/20 border-cosmic-cyan text-white" : "bg-black/50 border-white/20 text-white/80 hover:bg-white/10"}`}
+          title="Alternar Cone 2 (atalho: V)"
+        >
+          {showCone2 ? "Hide Cone 2" : "Show Cone 2"}
+        </button>
+      </div>
+
+      <Canvas camera={{ position: [0, 10, 20], fov: 60, far: 2000 }}>
         <Scene
+          showCone1={showCone1}
+          showCone2={showCone2}
           onSelectPlanet={setSelected}
           onHoverPlanet={(info) => {
             if (info.visible) setTooltip({ visible: true, text: info.name ?? "", x: info.x ?? 0, y: info.y ?? 0 })
             else setTooltip((t) => ({ ...t, visible: false }))
           }}
-          onUserInteraction={handleUserInteraction}
-          autoRotate={autoRotate}
         />
       </Canvas>
 

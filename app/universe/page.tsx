@@ -3,6 +3,7 @@
 import { Galaxy } from "@/components/galaxy"
 import { Header } from "@/components/header"
 import { SpaceBackground } from "@/components/space-background"
+import { Suspense } from "react"
 
 export default function GalaxyPage() {
   return (
@@ -24,7 +25,9 @@ export default function GalaxyPage() {
         {/* Galaxy component with decorative border */}
         <div className="flex-1 relative mt-36 mb-8 mx-4 md:mx-8">
           <div className="absolute inset-0 rounded-2xl border-2 border-nebula-purple/30 bg-gradient-to-br from-nebula-purple/5 to-cosmic-cyan/5 backdrop-blur-sm overflow-hidden">
-            <Galaxy />
+            <Suspense fallback={<div className="text-white">Loading 3D Universe...</div>}>
+              <Galaxy />
+            </Suspense>
           </div>
 
           {/* Corner decorations */}

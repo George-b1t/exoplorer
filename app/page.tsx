@@ -19,7 +19,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 
 export default function HomePage() {
   const router = useRouter()
@@ -132,11 +132,12 @@ export default function HomePage() {
                     </div>
                   </div>
                   <div className="relative h-64 md:h-96 rounded-2xl overflow-hidden border-2 border-nebula-purple/30 bg-gradient-to-br from-nebula-purple/10 to-cosmic-cyan/10 backdrop-blur-sm flex items-center justify-center">
+                    <Suspense fallback={<div className="text-white">Loading 3D Universe...</div>}>
                       <Galaxy />
+                    </Suspense>
                   </div>
                 </div>
-            
-          </div>
+              </div>
         </section>
 
         {/* Features Section */}

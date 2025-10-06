@@ -25,25 +25,25 @@ export function Header() {
                 href="/search"
                 className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
               >
-                Busca
+                Search
               </Link>
               <Link
                 href="/catalog"
                 className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
               >
-                Catálogo
+                Catalog
               </Link>
               <Link
                 href="/galaxy"
                 className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
               >
-                Galáxia 3D
+                Galaxy 3D
               </Link>
               <Link
                 href="/training"
                 className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
               >
-                Treinar IA
+                Train AI
               </Link>
               <Link
                 href="/learn"
@@ -55,7 +55,7 @@ export function Header() {
                 href="/about"
                 className="text-sm font-medium text-white/80 hover:text-cosmic-cyan transition-colors"
               >
-                Sobre
+                About
               </Link>
 
               <ModeSwitcherDialog />

@@ -1,27 +1,27 @@
 "use client"
 
-import { useState, useMemo, useRef, useEffect } from "react"
-import { useMode } from "@/contexts/mode-context"
 import { Header } from "@/components/header"
 import { SpaceBackground } from "@/components/space-background"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { exoplanets, RawExo } from "@/lib/exo"
-import { ChevronLeftIcon, ChevronRightIcon, Search } from "lucide-react"
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
 } from "@/components/ui/pagination"
+import { useMode } from "@/contexts/mode-context"
+import { exoplanets, RawExo } from "@/lib/exo"
+import { ChevronLeftIcon, ChevronRightIcon, Search } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
 
 import { Canvas } from "@react-three/fiber"
 
 // 🌌 — shaders e utils que você já tem no projeto
 import { parseMass } from "@/utils/parseMass"
 
-import { ExoplanetData } from "@/components/galaxy"
 import { Exoplanet } from "@/components/exoplanet"
+import { ExoplanetData } from "@/components/galaxy"
 import { Button } from "@/components/ui/button"
 
 /** ---------- Mini preview com material shaderizado ---------- */
@@ -154,11 +154,11 @@ export default function CatalogPage() {
         <Header />
         <main className="container mx-auto px-4 py-12">
           <div className="mb-12">
-            <h1 className="text-4xl font-bold mb-4 text-white">Catálogo de Exoplanetas</h1>
+            <h1 className="text-4xl font-bold mb-4 text-white">Exoplanet Catalog</h1>
             <p className="text-white/80 text-lg">
               {isEducational
-                ? "Explore nossa coleção de planetas descobertos fora do sistema solar"
-                : "Catálogo completo de exoplanetas com dados científicos"}
+                ? "Explore our collection of planets discovered outside the solar system"
+                : "Complete catalog of exoplanets with scientific data"}
             </p>
           </div>
 
@@ -166,7 +166,7 @@ export default function CatalogPage() {
             <div className="space-y-6">
               <div>
                 <Label htmlFor="search" className="text-white mb-2 block">
-                  Buscar por nome
+                  Search by Name
                 </Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50" />
@@ -182,7 +182,7 @@ export default function CatalogPage() {
 
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
-                  <Label className="text-white mb-2 block">{isEducational ? "Massa (Terra = 1)" : "Massa (M⊕)"}</Label>
+                  <Label className="text-white mb-2 block">{isEducational ? "Mass (Earth = 1)" : "Mass (M⊕)"}</Label>
                   <div className="flex gap-2">
                     <Input
                       type="number"
@@ -202,7 +202,7 @@ export default function CatalogPage() {
                 </div>
 
                 <div>
-                  <Label className="text-white mb-2 block">{isEducational ? "Tamanho (Terra = 1)" : "Raio (R⊕)"}</Label>
+                  <Label className="text-white mb-2 block">{isEducational ? "Radius (Earth = 1)" : "Radius (R⊕)"}</Label>
                   <div className="flex gap-2">
                     <Input
                       type="number"
@@ -222,7 +222,7 @@ export default function CatalogPage() {
                 </div>
 
                 <div>
-                  <Label className="text-white mb-2 block">Temperatura (K)</Label>
+                  <Label className="text-white mb-2 block">Temperature (K)</Label>
                   <div className="flex gap-2">
                     <Input
                       type="number"
@@ -243,7 +243,7 @@ export default function CatalogPage() {
               </div>
 
               <div className="text-sm text-white/60">
-                {displayPlanets.length} {displayPlanets.length === 1 ? "planeta encontrado" : "planetas encontrados"}
+                {displayPlanets.length} {displayPlanets.length === 1 ? "planet found" : "planets found"}
               </div>
             </div>
           </Card>
@@ -267,7 +267,7 @@ export default function CatalogPage() {
 
                     <div className="space-y-1 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-white/60">{isEducational ? "Massa:" : "Mass:"}</span>
+                        <span className="text-white/60">{isEducational ? "Mass:" : "Mass:"}</span>
                         <span className="font-medium text-white">
                           {exo.pl_masse != null ? (() => {
                             const n = typeof exo.pl_masse === "number" ? exo.pl_masse : parseFloat(String(exo.pl_masse));
@@ -276,7 +276,7 @@ export default function CatalogPage() {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-white/60">{isEducational ? "Tamanho:" : "Radius:"}</span>
+                        <span className="text-white/60">{isEducational ? "Size:" : "Radius:"}</span>
                         <span className="font-medium text-white">
                           {exo.pl_rade != null ? (() => {
                             const n = typeof exo.pl_rade === "number" ? exo.pl_rade : parseFloat(String(exo.pl_rade));
@@ -285,7 +285,7 @@ export default function CatalogPage() {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-white/60">{isEducational ? "Temperatura:" : "Temp:"}</span>
+                        <span className="text-white/60">{isEducational ? "Temperature:" : "Temp:"}</span>
                         <span className="font-medium text-white">{exo.pl_eqt} K</span>
                       </div>
                     </div>
@@ -297,7 +297,7 @@ export default function CatalogPage() {
 
           {paginatedPlanets.length === 0 && (
             <div className="text-center py-12">
-              <p className="text-white/60 text-lg">Nenhum planeta encontrado com esses critérios.</p>
+              <p className="text-white/60 text-lg">No planets found with these criteria.</p>
             </div>
           )}
 

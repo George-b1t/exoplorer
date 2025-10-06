@@ -20,49 +20,49 @@ export default function LearnPage() {
   const features = [
     {
       icon: Clock,
-      name: "Período Orbital",
-      description: "Tempo que o planeta leva para completar uma órbita ao redor de sua estrela",
+      name: "Orbital Period",
+      description: "Time it takes for a planet to complete one orbit around its star",
       color: "nebula-purple",
       details:
-        "Medido em dias terrestres. Períodos mais curtos geralmente indicam planetas mais próximos de suas estrelas.",
+        "Measured in Earth days. Shorter periods usually indicate planets closer to their stars.",
     },
     {
       icon: Ruler,
-      name: "Raio do Planeta",
-      description: "Tamanho do planeta em relação ao raio da Terra",
+      name: "Planet Radius",
+      description: "Size of the planet relative to Earth's radius",
       color: "cosmic-cyan",
       details:
-        "Planetas com raios entre 1-2 raios terrestres são considerados super-Terras, enquanto maiores podem ser gigantes gasosos.",
+        "Planets with radii between 1-2 Earth radii are considered super-Earths, while larger ones may be gas giants.",
     },
     {
       icon: Thermometer,
-      name: "Temperatura de Equilíbrio",
-      description: "Temperatura estimada da superfície do planeta",
+      name: "Equilibrium Temperature",
+      description: "Estimated temperature of the planet's surface",
       color: "nebula-pink",
       details:
-        "Calculada com base na distância da estrela e radiação recebida. Crucial para determinar habitabilidade.",
+        "Calculated based on the distance from the star and the radiation received. Crucial for determining habitability.",
     },
     {
       icon: Sun,
-      name: "Temperatura Estelar",
-      description: "Temperatura da estrela hospedeira",
+      name: "Stellar Temperature",
+      description: "Temperature of the host star's surface",
       color: "nebula-purple",
-      details: "Estrelas mais quentes (tipo O, B, A) emitem mais radiação UV, afetando a atmosfera planetária.",
+      details: "Hotter stars (types O, B, A) emit more UV radiation, affecting the planetary atmosphere.",
     },
     {
       icon: Orbit,
-      name: "Raio Orbital",
-      description: "Distância média entre o planeta e sua estrela",
+      name: "Orbital Radius",
+      description: "Average distance between the planet and its star",
       color: "cosmic-cyan",
-      details: "Medido em Unidades Astronômicas (UA). 1 UA = distância Terra-Sol. Define a zona habitável.",
+      details: "Measured in Astronomical Units (AU). 1 AU = distance from Earth to Sun. Defines the habitable zone.",
     },
     {
       icon: Zap,
-      name: "Fluxo de Insolação",
-      description: "Quantidade de energia estelar recebida pelo planeta",
+      name: "Insolation Flux",
+      description: "Amount of stellar energy received by the planet",
       color: "nebula-pink",
       details:
-        "Comparado ao fluxo que a Terra recebe do Sol. Valores próximos a 1 indicam condições similares à Terra.",
+        "Compared to the flux that Earth receives from the Sun. Values close to 1 indicate conditions similar to Earth.",
     },
   ]
 
@@ -81,18 +81,17 @@ export default function LearnPage() {
             }`}
           >
             <div className="inline-block px-4 py-2 rounded-full bg-nebula-purple/20 border border-nebula-purple/40 backdrop-blur-sm mb-4">
-              <span className="text-nebula-purple text-sm font-medium">Centro de Aprendizado</span>
+              <span className="text-nebula-purple text-sm font-medium">Learning Center</span>
             </div>
 
             <h1 className="text-4xl md:text-5xl font-bold leading-tight text-balance">
               <span className="bg-gradient-to-r from-nebula-purple via-cosmic-cyan to-nebula-pink bg-clip-text text-transparent">
-                Aprenda sobre Exoplanetas
+                Learn About Exoplanets
               </span>
             </h1>
 
             <p className="text-lg text-white/80 leading-relaxed text-pretty max-w-3xl mx-auto">
-              Descubra como identificamos mundos distantes, as características que analisamos e as missões espaciais que
-              tornaram tudo isso possível.
+              Discover how we identify distant worlds, the features we analyze, and the space missions that made it all possible.
             </p>
           </div>
         </section>
@@ -106,28 +105,23 @@ export default function LearnPage() {
                   <Telescope className="w-6 h-6 text-nebula-purple" />
                 </div>
                 <div>
-                  <h2 className="text-3xl font-bold text-white mb-4">O que são Exoplanetas?</h2>
+                  <h2 className="text-3xl font-bold text-white mb-4">What are Exoplanets?</h2>
                   <div className="space-y-4 text-white/80 leading-relaxed">
                     <p>
-                      Exoplanetas, ou planetas extrassolares, são planetas que orbitam estrelas fora do nosso Sistema
-                      Solar. Desde a primeira confirmação em 1995, já descobrimos mais de 5.000 exoplanetas, cada um com
-                      características únicas.
+                      Exoplanets, or extrasolar planets, are planets that orbit stars outside our Solar System. Since the first confirmation in 1995, we have discovered over 5,000 exoplanets, each with unique characteristics.
                     </p>
                     <p>
-                      Esses mundos distantes variam drasticamente em tamanho, composição e condições ambientais. Alguns
-                      são gigantes gasosos maiores que Júpiter, outros são rochosos como a Terra, e há até
-                      "super-Terras" - planetas rochosos maiores que o nosso.
+                      These distant worlds vary dramatically in size, composition, and environmental conditions. Some are gas giants larger than Jupiter, others are rocky like Earth, and there are even "super-Earths" - rocky planets larger than our own.
                     </p>
                     <p>
-                      A busca por exoplanetas não é apenas sobre encontrar novos mundos, mas sobre responder uma das
-                      questões mais fundamentais da humanidade:{" "}
-                      <span className="text-cosmic-cyan font-semibold">estamos sozinhos no universo?</span>
+                      The search for exoplanets is not just about finding new worlds, but about answering one of humanity's most fundamental questions:{" "}
+                      <span className="text-cosmic-cyan font-semibold">are we alone in the universe?</span>
                     </p>
                     <p>
-                        Cada novo planeta descoberto nos ajuda a entender melhor como os sistemas planetários se formam,
-                        quais condições tornam um mundo habitável, e quais são as chances de existir vida fora da Terra.
-                        A exploração desses mundos distantes é, portanto, uma janela para compreendermos não apenas o cosmos
-                        mas também o nosso próprio lugar nele.{" "}
+                        Each new planet discovered helps us better understand how planetary systems form,
+                        what conditions make a world habitable, and what the chances are of life existing beyond Earth.
+                        The exploration of these distant worlds is, therefore, a window into understanding not only the cosmos
+                        but also our own place in it.{" "}
                     </p>
                   </div>
                 </div>
@@ -136,15 +130,15 @@ export default function LearnPage() {
               <div className="grid md:grid-cols-3 gap-4 mt-8">
                 <div className="p-4 rounded-lg bg-nebula-purple/10 border border-nebula-purple/30">
                   <div className="text-2xl font-bold text-nebula-purple mb-1">5,000+</div>
-                  <div className="text-sm text-white/70">Exoplanetas Confirmados</div>
+                  <div className="text-sm text-white/70">Confirmed Exoplanets</div>
                 </div>
                 <div className="p-4 rounded-lg bg-cosmic-cyan/10 border border-cosmic-cyan/30">
                   <div className="text-2xl font-bold text-cosmic-cyan mb-1">9,000+</div>
-                  <div className="text-sm text-white/70">Candidatos em Análise</div>
+                  <div className="text-sm text-white/70">Candidates Under Analysis</div>
                 </div>
                 <div className="p-4 rounded-lg bg-nebula-pink/10 border border-nebula-pink/30">
                   <div className="text-2xl font-bold text-nebula-pink mb-1">4,000+</div>
-                  <div className="text-sm text-white/70">Sistemas Planetários</div>
+                  <div className="text-sm text-white/70">Planetary Systems</div>
                 </div>
               </div>
             </Card>
@@ -153,9 +147,9 @@ export default function LearnPage() {
           {/* Prediction Features */}
           <section className="mb-16">
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-white mb-4">Características</h2>
+              <h2 className="text-3xl font-bold text-white mb-4">Characteristics</h2>
               <p className="text-white/70 text-lg max-w-3xl mx-auto">
-                É possível identificar exoplanetas a partir de múltiplos parâmetros orbitais e estelares. Cada característica fornece pistas cruciais sobre a natureza do objeto celeste.
+                It is possible to identify exoplanets from multiple orbital and stellar parameters. Each characteristic provides crucial clues about the nature of the celestial object.
               </p>
             </div>
 
@@ -193,10 +187,10 @@ export default function LearnPage() {
           {/* Space Missions */}
           <section>
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-white mb-4">Missões Espaciais</h2>
+              <h2 className="text-3xl font-bold text-white mb-4">Space Missions</h2>
               <p className="text-white/70 text-lg max-w-3xl mx-auto">
-                As descobertas de exoplanetas são possíveis graças a telescópios espaciais dedicados que monitoram
-                milhões de estrelas.
+                The discoveries of exoplanets are made possible by dedicated space telescopes that monitor
+                millions of stars.
               </p>
             </div>
 
@@ -221,42 +215,42 @@ export default function LearnPage() {
                         <Badge className="bg-nebula-purple/30 text-nebula-purple border-nebula-purple/50">
                           2009 - 2018
                         </Badge>
-                        <h3 className="text-2xl font-bold text-white">Telescópio Espacial Kepler</h3>
+                        <h3 className="text-2xl font-bold text-white">Kepler Space Telescope</h3>
                         <p className="text-nebula-purple font-semibold">NASA</p>
                       </div>
                     </div>
 
                     <div className="md:w-2/3 space-y-6">
                       <div>
-                        <h4 className="text-lg font-bold text-white mb-3">Missão</h4>
+                        <h4 className="text-lg font-bold text-white mb-3">Mission</h4>
                         <p className="text-white/80 leading-relaxed">
-                          Lançado em 2009, o Kepler foi o primeiro telescópio espacial projetado especificamente para
-                          procurar exoplanetas semelhantes à Terra em nossa galáxia. Durante sua missão principal,
-                          monitorou continuamente mais de 150.000 estrelas na constelação de Cygnus.
+                          Launched in 2009, Kepler was the first space telescope designed specifically to
+                          search for Earth-like exoplanets in our galaxy. During its primary mission,
+                          it continuously monitored over 150,000 stars in the constellation Cygnus.
                         </p>
                       </div>
 
                       <div>
-                        <h4 className="text-lg font-bold text-white mb-3">Método de Detecção</h4>
+                        <h4 className="text-lg font-bold text-white mb-3">Detection Method</h4>
                         <p className="text-white/80 leading-relaxed">
-                          Utilizou o <span className="text-nebula-purple font-semibold">método de trânsito</span>,
-                          detectando pequenas diminuições no brilho de uma estrela quando um planeta passa na frente
-                          dela. Essas variações de luz, embora minúsculas (menos de 1%), revelam a presença, tamanho e
-                          período orbital do planeta.
+                          It used the <span className="text-nebula-purple font-semibold">transit method</span>,
+                          detecting small dips in a star's brightness when a planet passes in front of it. These
+                          light variations, though tiny (less than 1%), reveal the presence, size, and orbital
+                          period of the planet.
                         </p>
                       </div>
 
                       <Accordion type="single" collapsible className="w-full">
                         <AccordionItem value="achievements" className="border-white/10">
                           <AccordionTrigger className="text-white hover:text-nebula-purple">
-                            Principais Conquistas
+                            Key Achievements
                           </AccordionTrigger>
                           <AccordionContent className="text-white/70 space-y-2">
-                            <p>• Descobriu mais de 2.600 exoplanetas confirmados</p>
-                            <p>• Identificou milhares de candidatos adicionais</p>
-                            <p>• Encontrou o primeiro planeta do tamanho da Terra na zona habitável (Kepler-452b)</p>
-                            <p>• Revelou que planetas são mais comuns que estrelas na Via Láctea</p>
-                            <p>• Descobriu sistemas com múltiplos planetas em órbitas compactas</p>
+                            <p>• Discovered over 2,600 confirmed exoplanets</p>
+                            <p>• Identified thousands of additional candidates</p>
+                            <p>• Found the first Earth-sized planet in the habitable zone (Kepler-452b)</p>
+                            <p>• Revealed that planets are more common than stars in the Milky Way</p>
+                            <p>• Discovered systems with multiple planets in compact orbits</p>
                           </AccordionContent>
                         </AccordionItem>
                       </Accordion>
@@ -264,15 +258,15 @@ export default function LearnPage() {
                       <div className="grid grid-cols-3 gap-4 pt-4">
                         <div className="text-center p-3 rounded-lg bg-nebula-purple/10 border border-nebula-purple/30">
                           <div className="text-xl font-bold text-nebula-purple">2,600+</div>
-                          <div className="text-xs text-white/70">Planetas</div>
+                          <div className="text-xs text-white/70">Planets</div>
                         </div>
                         <div className="text-center p-3 rounded-lg bg-nebula-purple/10 border border-nebula-purple/30">
                           <div className="text-xl font-bold text-nebula-purple">150,000</div>
-                          <div className="text-xs text-white/70">Estrelas</div>
+                          <div className="text-xs text-white/70">Stars</div>
                         </div>
                         <div className="text-center p-3 rounded-lg bg-nebula-purple/10 border border-nebula-purple/30">
-                          <div className="text-xl font-bold text-nebula-purple">9 anos</div>
-                          <div className="text-xs text-white/70">Missão</div>
+                          <div className="text-xl font-bold text-nebula-purple">9 years</div>
+                          <div className="text-xs text-white/70">Mission</div>
                         </div>
                       </div>
                     </div>
@@ -289,7 +283,7 @@ export default function LearnPage() {
                       </div>
                       <div className="text-center md:text-left space-y-2">
                         <Badge className="bg-cosmic-cyan/30 text-cosmic-cyan border-cosmic-cyan/50">
-                          2018 - Presente
+                          2018 - Present
                         </Badge>
                         <h3 className="text-2xl font-bold text-white">TESS</h3>
                         <p className="text-cosmic-cyan font-semibold">Transiting Exoplanet Survey Satellite</p>
@@ -298,41 +292,38 @@ export default function LearnPage() {
 
                     <div className="md:w-2/3 space-y-6">
                       <div>
-                        <h4 className="text-lg font-bold text-white mb-3">Missão</h4>
+                        <h4 className="text-lg font-bold text-white mb-3">Missions</h4>
                         <p className="text-white/80 leading-relaxed">
-                          Lançado em 2018, o TESS é o sucessor do Kepler e representa a próxima geração de caçadores de
-                          exoplanetas. Ao contrário do Kepler, que focou em uma região específica, o TESS realiza um
-                          levantamento de quase todo o céu, monitorando as estrelas mais brilhantes e próximas da Terra.
+                          Launched in 2018, TESS is the successor to Kepler and represents the next generation of planet-hunting
+                          missions. Unlike Kepler, which focused on a specific region, TESS conducts a survey of nearly the entire sky,
+                          monitoring the brightest and closest stars to Earth.
                         </p>
                       </div>
 
                       <div>
-                        <h4 className="text-lg font-bold text-white mb-3">Estratégia de Observação</h4>
+                        <h4 className="text-lg font-bold text-white mb-3">Observation Strategy</h4>
                         <p className="text-white/80 leading-relaxed">
-                          O TESS divide o céu em 26 setores, observando cada um por 27 dias. Suas quatro câmeras de
-                          grande angular cobrem uma área 400 vezes maior que o Kepler. Foca em estrelas 30-100 vezes
-                          mais brilhantes, facilitando estudos de acompanhamento com{" "}
-                          <span className="text-cosmic-cyan font-semibold">telescópios terrestres e o James Webb</span>.
+                          TESS divides the sky into 26 sectors, observing each for 27 days. Its four wide-field cameras cover an area 400 times larger than Kepler. It focuses on stars 30-100 times brighter, facilitating follow-up studies with{" "}
+                          <span className="text-cosmic-cyan font-semibold">ground-based telescopes and the James Webb</span>.
                         </p>
                       </div>
 
                       <Accordion type="single" collapsible className="w-full">
                         <AccordionItem value="achievements" className="border-white/10">
                           <AccordionTrigger className="text-white hover:text-cosmic-cyan">
-                            Principais Conquistas
+                            Key Achievements
                           </AccordionTrigger>
                           <AccordionContent className="text-white/70 space-y-2">
-                            <p>• Descobriu mais de 400 exoplanetas confirmados até agora</p>
-                            <p>• Identificou mais de 6.000 candidatos a exoplanetas</p>
+                            <p>• Discovered over 400 confirmed exoplanets to date</p>
+                            <p>• Identified over 6,000 exoplanet candidates</p>
                             <p>
-                              • Encontrou o primeiro planeta do tamanho da Terra na zona habitável de sua estrela (TOI
+                              • Found the first Earth-sized planet in the habitable zone of its star (TOI
                               700 d)
                             </p>
                             <p>
-                              • Descobriu sistemas planetários ao redor de estrelas próximas ideais para estudos
-                              atmosféricos
+                              • Discovered planetary systems around nearby stars ideal for atmospheric studies
                             </p>
-                            <p>• Fornece alvos prioritários para o Telescópio Espacial James Webb</p>
+                            <p>• Provided priority targets for the James Webb Space Telescope</p>
                           </AccordionContent>
                         </AccordionItem>
                       </Accordion>
@@ -340,14 +331,14 @@ export default function LearnPage() {
                       <div className="grid grid-cols-3 gap-4 pt-4">
                         <div className="text-center p-3 rounded-lg bg-cosmic-cyan/10 border border-cosmic-cyan/30">
                           <div className="text-xl font-bold text-cosmic-cyan">400+</div>
-                          <div className="text-xs text-white/70">Planetas</div>
+                          <div className="text-xs text-white/70">Planets</div>
                         </div>
                         <div className="text-center p-3 rounded-lg bg-cosmic-cyan/10 border border-cosmic-cyan/30">
                           <div className="text-xl font-bold text-cosmic-cyan">200,000+</div>
-                          <div className="text-xs text-white/70">Estrelas</div>
+                          <div className="text-xs text-white/70">Stars</div>
                         </div>
                         <div className="text-center p-3 rounded-lg bg-cosmic-cyan/10 border border-cosmic-cyan/30">
-                          <div className="text-xl font-bold text-cosmic-cyan">Ativa</div>
+                          <div className="text-xl font-bold text-cosmic-cyan">Active</div>
                           <div className="text-xs text-white/70">Status</div>
                         </div>
                       </div>
@@ -361,14 +352,14 @@ export default function LearnPage() {
               <div className="flex items-start gap-4">
                 <TrendingUp className="w-6 h-6 text-nebula-pink flex-shrink-0 mt-1" />
                 <div>
-                  <h3 className="text-lg font-bold text-white mb-2">O Futuro da Exploração</h3>
+                  <h3 className="text-lg font-bold text-white mb-2">The future of exploration</h3>
                   <p className="text-white/70 leading-relaxed">
-                    Com o <span className="text-cosmic-cyan font-semibold">Telescópio Espacial James Webb</span> agora
-                    operacional, podemos analisar as atmosferas de exoplanetas em detalhes sem precedentes, procurando
-                    por bioassinaturas - sinais químicos que podem indicar vida. Missões futuras como o{" "}
-                    <span className="text-nebula-pink font-semibold">Nancy Grace Roman Space Telescope</span> e o{" "}
-                    <span className="text-nebula-purple font-semibold">PLATO</span> da ESA continuarão expandindo nosso
-                    conhecimento sobre mundos distantes.
+                    With the <span className="text-cosmic-cyan font-semibold">James Webb Space Telescope</span> now
+                    operational, we can analyze the atmospheres of exoplanets in unprecedented detail, searching
+                    for biosignatures - chemical signs that may indicate life. Future missions such as the{" "}
+                    <span className="text-nebula-pink font-semibold">Nancy Grace Roman Space Telescope</span> and the{" "}
+                    <span className="text-nebula-purple font-semibold">PLATO</span> mission by ESA will continue to expand our
+                    knowledge of distant worlds.
                   </p>
                 </div>
               </div>
